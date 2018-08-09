@@ -27,9 +27,3 @@ These scripts are based on the original scripts for the paper Newman et al.
 Jochem van Kempen, 2018
 Jochemvankempen@gmail.com
 https://github.com/jochemvankempen
-
--------------------------------------------------------------------------
-
-All data can be found at https://figshare.com/s/8d6f461834c47180a444
-
-
