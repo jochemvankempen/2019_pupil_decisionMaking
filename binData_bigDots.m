@@ -33,10 +33,6 @@
 
 % sort and bin data
 
-if ~exist('normaliseData','var')
-    normaliseData=0;
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Select data to bin/sort %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,74 +48,67 @@ switch type
         data2use    = allRT;
     case 'RT_zscore'
         data2use    = allRT_zscore;
-    case 'RT_window'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
+    case {'RT_window','RTmin5','RTmin4','RTmin3','RTmin2','RTmin1','RT0','RTplus1','RTplus2','RTplus3','RTplus4','RTplus5'}
+        data2use    = NaN(size(allTrial_window));        
+        for irow = 1:size(allTrial_window,1)
+            trIdx       = allTrial_window(irow,:);
+            trIdx_get   = trIdx(find(~isnan(trIdx)));
+            trIdx_save  = find(~isnan(trIdx));
+            data2use(irow,trIdx_save) = allRT_zscore(trIdx_get);
+        end       
+        data2use(~allTrial_window_valid_RT) = NaN;
+
         tt2use      = -5:5;
         t2test      = -5:1:5;
         twin_bar    = [-1 -1];
-    case 'RTcv_window'
-        data2use    = allRT_window;
-        data2use(~allValidRT_window) = NaN;
+        switch type
+            case 'RTmin5'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==-5,:))';
+            case 'RTmin4'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==-4,:))';
+            case 'RTmin3'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==-3,:))';
+            case 'RTmin2'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==-2,:))';
+            case 'RTmin1'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==-1,:))';
+            case 'RT0'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==0,:))';
+            case 'RTplus1'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==1,:))';
+            case 'RTplus2'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==2,:))';
+            case 'RTplus3'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==3,:))';
+            case 'RTplus4'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==4,:))';
+            case 'RTplus5'
+                tt2use      = -5:5;
+                data2use = squeeze(data2use(tt2use==5,:))';
+        end
+    case 'RTcv_window'        
+        data2use    = NaN(size(allTrial_window));
+        for irow = 1:size(allTrial_window,1)
+            trIdx       = allTrial_window(irow,:);
+            trIdx_get   = trIdx(find(~isnan(trIdx)));
+            trIdx_save  = find(~isnan(trIdx));
+            data2use(irow,trIdx_save) = allRT(trIdx_get);
+        end
+        data2use(~allTrial_window_valid_RT) = NaN;
                 
         tt2use      = -5:5;
         t2test      = -5:1:5;
         twin_bar    = [-1 -1];
-    case 'RTmin5'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==-5,:))';
-    case 'RTmin4'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==-4,:))';
-    case 'RTmin3'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==-3,:))';
-    case 'RTmin2'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==-2,:))';
-    case 'RTmin1'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==-1,:))';
-    case 'RT0'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==0,:))';
-    case 'RTplus1'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==1,:))';
-    case 'RTplus2'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==2,:))';
-    case 'RTplus3'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==3,:))';
-    case 'RTplus4'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==4,:))';
-    case 'RTplus5'
-        data2use    = allRTz_window;
-        data2use(~allValidRT_window) = NaN;
-        tt2use      = -5:5;
-        data2use = squeeze(data2use(tt2use==5,:))';
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% pupil
@@ -156,7 +145,19 @@ switch type
         data2use    = allPupil_lp_RT_neg200_200;
     case 'pupil_bp_RT_neg200_200'
         data2use    = allPupil_bp_RT_neg200_200;
-        
+
+    case 'pupil_lp_baseline_window'
+        data2use    = allPupil_lp_baseline_window;
+        data2use(~allValidPupil_window) = NaN;
+        tt2use      = -5:5;
+        t2test      = -5:1:5;
+        twin_bar    = [-1 -1];
+    case 'pupil_lp_response_window'
+        data2use    = allPupil_lp_response_window;
+        data2use(~allValidPupil_window) = NaN;
+        tt2use      = -5:5;
+        t2test      = -5:1:5;
+        twin_bar    = [-1 -1];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% CPP
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,30 +178,87 @@ switch type
         tt2use      = t;
         t2test     = -100:10:1400;
         twin_bar    = [300 400];
-    case {'CPPr_csd','CPPr_csd_slope'}
+    case {'CPPr_csd_slope','CPPr_csd_slope_var','CPPr_csd_slope_window'}
         % CPP build-up rate was defined as the slope of a straight line fitted to the response-locked waveform (O’Connell et al., 2012; Kelly and O’Connell, 2013; Loughnane et al., 2016) with the time window defined individually for each participant as the 100ms prior to the maximum CPP amplitude pre-response.
         data2use    = allCPPr_csd;
         tt2use      = tr;
-        t2test      = -400:10:100;
-        twin_bar    = [-100 0];
-%         twin_bar    = [-100 0];
-    case {'CPPr_amplitude'}
+        %         twin_bar    = [-200 -50];
+        twin_bar    = [-250 -50];
+        
+        switch type
+            case 'CPPr_csd_slope_window'
+                %                 keyboard
+                tmpData         = data2use;
+                tt2use_win      = -5:5;
+                t2test_win      = -5:1:5;
+                
+                data2use    = NaN([size(tmpData) length(tt2use_win)]);
+                for irow = 1:size(allTrial_window,1)
+                    trIdx       = allTrial_window(irow,:);
+                    trIdx_get   = trIdx(find(~isnan(trIdx)));
+                    trIdx_save  = find(~isnan(trIdx));
+                    data2use(:,trIdx_save,irow) = squeeze(tmpData(:,trIdx_get));
+                end
+                data2use(:,~allTrial_window_valid_neg100_RT_200') = NaN;
+                
+        end
+
+    case {'CPPr_csd','CPPr_amplitude','CPPr_amplitude_var','CPPr_amplitude_window'}
         data2use    = allCPPr_csd;
         tt2use      = tr;
-        twin_bar    = [-180 -80];
+        t2test      = -400:10:100;
+        %         twin_bar    = [-50 0];
         twin_bar    = [-100 0];
-%         twin_bar    = [-20 0];
-    case {'CPP_ITPC','CPP_ITPC_bar','CPP_ITPC_band'}
+        %         twin_bar    = [-20 0];
+        
+        switch type
+            case 'CPPr_amplitude_window'
+                tIdx    = (tt2use>=twin_bar(1) & tt2use<=twin_bar(2));
+                tmpData = squeeze(mean(data2use(tIdx, :),1))';
+                
+                data2use    = NaN(size(allTrial_window));
+                for irow = 1:size(allTrial_window,1)
+                    trIdx       = allTrial_window(irow,:);
+                    trIdx_get   = trIdx(find(~isnan(trIdx)));
+                    trIdx_save  = find(~isnan(trIdx));
+                    data2use(irow,trIdx_save) = tmpData(trIdx_get);
+                end
+                data2use(~allTrial_window_valid_neg100_RT_200) = NaN;   
+                
+                tt2use      = -5:5;
+                t2test      = -5:1:5;
+                twin_bar    = [-1 -1];
+        end
+        
+    case {'CPP_ITPC','CPP_ITPC_bar','CPP_ITPC_band','CPP_ITPC_window'}
         data2use    = allCPP_phase;
         tt2use      = (SPG_times*1000) + t(1);
         ff2use      = SPG_freq;
         switch datatype
-            case {'ITPC','ITPC_bar'}
+            case {'ITPC','ITPC_bar','ITPC_window'}
                 t2test      = [300 550];
             case 'ITPC_band'
                 t2test      = [-200 1000];
         end
         f2test      = [0 4];
+        
+        switch type
+            case 'CPP_ITPC_window'
+%                 keyboard
+                tmpData         = data2use;
+                tt2use_win      = -5:5;
+                t2test_win      = -5:1:5;
+
+                data2use    = NaN([size(tmpData) length(tt2use_win)]);
+                for irow = 1:size(allTrial_window,1)
+                    trIdx       = allTrial_window(irow,:);
+                    trIdx_get   = trIdx(find(~isnan(trIdx)));
+                    trIdx_save  = find(~isnan(trIdx));
+                    data2use(:,:,trIdx_save,irow) = squeeze(tmpData(:,:,trIdx_get));
+                end
+                data2use(:,:,~allTrial_window_valid_neg100_RT_200') = NaN;
+
+        end
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% N2
@@ -263,11 +321,22 @@ switch type
         ff2use      = SPG_freq;
         switch datatype
             case 'ITPC_bar'
-                t2test      = [200 450];
+                t2test      = [250 450];
             case 'ITPC_band'
                 t2test      = [-200 1000];
         end
         f2test      = [0 4];
+    case {'N2i_256_ITPC','N2i_256_ITPC_bar','N2i_256_ITPC_band'}
+        data2use    = allN2i_256_phase;
+        tt2use      = (SPG_times256*1000) + t(1);
+        ff2use      = SPG_freq256;
+        switch datatype
+            case 'ITPC_bar'
+                t2test      = [150 200];
+            case 'ITPC_band'
+                t2test      = [-200 1000];
+        end
+        f2test      = [3 4];     
     case 'N2c_topo'
         data2use    = allN2c_topo;
         
@@ -293,25 +362,74 @@ switch type
         %%% beta
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    case 'beta'
+    case {'beta','beta_pretarget_amplitude'}
         data2use    = allBeta_postTarget;
         tt2use      = stft_times;
         t2test      = -500:50:700;
-        twin_bar    = [400  600];
-    case 'beta_response'
-        data2use    = allBeta_preResponse;
+        switch type
+            case 'beta_pretarget_amplitude'
+                twin_bar    = [-100 0];
+            case 'beta'
+                twin_bar    = [400 600];
+        end
+    case {'beta_response','beta_response_amplitude','beta_response_amplitude_window',...
+            'beta_base_response','beta_base_response_amplitude','beta_base_response_amplitude_window'}
+        switch type
+            case {'beta_response','beta_response_amplitude','beta_response_amplitude_window'}
+                data2use    = allBeta_preResponse;
+            case {'beta_base_response','beta_base_response_amplitude','beta_base_response_amplitude_window'}
+                data2use    = allBeta_base_preResponse;
+        end
         tt2use      = stft_timesr;
         t2test      = -500:10:100;
-        twin_bar    = [-100 0];
-    case 'beta_response_mean'
-        data2use    = allBeta_preResponse_mean;
+        twin_bar    = [-130 -70];
+        
+        switch type
+            case {'beta_response_amplitude_window','beta_base_response_amplitude_window'}
+                tIdx    = (tt2use>=twin_bar(1) & tt2use<=twin_bar(2));
+                tmpData = squeeze(mean(data2use(tIdx, :),1))';
+                
+                data2use    = NaN(size(allTrial_window));
+                for irow = 1:size(allTrial_window,1)
+                    trIdx       = allTrial_window(irow,:);
+                    trIdx_get   = trIdx(find(~isnan(trIdx)));
+                    trIdx_save  = find(~isnan(trIdx));
+                    data2use(irow,trIdx_save) = tmpData(trIdx_get);
+                end
+                data2use(~allTrial_window_valid_neg100_RT_200) = NaN;
+                
+                tt2use      = -5:5;
+                t2test      = -5:1:5;
+                twin_bar    = [-1 -1];
+        end
+
+
     case 'beta_pre_response_topo'
         data2use    = allBeta_preResponse_topo;
-    case 'beta_pre_response_slope'
+    case {'beta_pre_response_slope','beta_pre_response_slope_window'}
         data2use    = allBeta_preResponse;
         tt2use      = stft_timesr;
         t2test      = [-300 0];
-        twin_bar    = [-100 0];
+%         twin_bar    = [-100 0];
+        
+        switch type
+            case 'beta_pre_response_slope_window'
+                %                 keyboard
+                tmpData         = data2use;
+                tt2use_win      = -5:5;
+                t2test_win      = -5:1:5;
+                
+                data2use    = NaN([size(tmpData) length(tt2use_win)]);
+                for irow = 1:size(allTrial_window,1)
+                    trIdx       = allTrial_window(irow,:);
+                    trIdx_get   = trIdx(find(~isnan(trIdx)));
+                    trIdx_save  = find(~isnan(trIdx));
+                    data2use(:,trIdx_save,irow) = squeeze(tmpData(:,trIdx_get));
+                end
+                data2use(:,~allTrial_window_valid_neg100_RT_200') = NaN;
+                
+        end
+        
 end
 
 try
@@ -457,11 +575,6 @@ for isub = 1:nSub
     [binEdges, binning2use(trIdx), ~] = binVal(binningData(trIdx,1), nbin2use, bintype);
     binning2use(isnan(binning2use)) = 0;
     
-    if normaliseData
-        gscale = max(max(data2use(:,trIdx)));
-        data2use(:,trIdx) = data2use(:,trIdx)/gscale*100;
-    end
-    
     clear trIdx
     %%
     %%%%%%%%%%%%%%%%%%%
@@ -518,25 +631,63 @@ for isub = 1:nSub
                         end
                     end
                     
-                case {'beta_pre_response_slope'}
-                    clear tmp
+%                 case {'beta_pre_response_slope'}
+%                     clear tmp
+%                     for ibin = 1:nbin2use
+%                         for isideStim = 1:sideInfo
+%                             if sideInfo > 1
+%                                 trIdx = (allSideStimtr==isideStim);
+%                                 tmp(isub, ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin) & trIdx),2));
+%                             else
+%                                 tmp(isub, ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin)),2));
+%                             end
+%                             
+%                             [~,slope_timeframe_index(1)] = min(abs(tt2use - t2test(1)));%
+%                             [~,slope_timeframe_index(2)] = min(abs(tt2use - t2test(2)));%
+%                             
+%                             coef = polyfit(tt2use(slope_timeframe_index(1):slope_timeframe_index(2)),squeeze((tmp(isub, ibin, isideStim, slope_timeframe_index(1):slope_timeframe_index(2))))',1);% coef gives 2 coefficients fitting r = slope * x + intercept
+%                             binnedData(isub, ibin, isideStim)=coef(1);
+% 
+%                         end
+%                     end
+                    
+                case {'beta_pre_response_slope', 'beta_pre_response_slope_window'}
+
                     for ibin = 1:nbin2use
                         for isideStim = 1:sideInfo
                             if sideInfo > 1
-                                trIdx = (allSideStimtr==isideStim);
-                                tmp(isub, ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin) & trIdx),2));
+                                trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
                             else
-                                tmp(isub, ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin)),2));
+                                trIdx = (binning2use==ibin);
                             end
                             
                             [~,slope_timeframe_index(1)] = min(abs(tt2use - t2test(1)));%
                             [~,slope_timeframe_index(2)] = min(abs(tt2use - t2test(2)));%
-                            
-                            coef = polyfit(tt2use(slope_timeframe_index(1):slope_timeframe_index(2)),squeeze((tmp(isub, ibin, isideStim, slope_timeframe_index(1):slope_timeframe_index(2))))',1);% coef gives 2 coefficients fitting r = slope * x + intercept
-                            binnedData(isub, ibin, isideStim)=coef(1);
+                           
+                            switch type
+                                case {'beta_pre_response_slope'}
+                                    
+                                    tmp = squeeze(mean(data2use(:,trIdx),2));
+                                    
+                                    coef = polyfit(tt2use(slope_timeframe_index(1):slope_timeframe_index(2)),squeeze(tmp(slope_timeframe_index(1):slope_timeframe_index(2)))',1);% coef gives 2 coefficients fitting r = slope * x + intercept
+                                    binnedData(isub, ibin, isideStim)=coef(1);
 
+                                case 'beta_pre_response_slope_window'
+                                    if isub == 1 && ibin == 1 && isideStim == 1
+                                        binnedData = NaN(nSub, nbin2use, sideInfo, size(data2use,3));
+                                    end
+                                    
+                                    tmp = squeeze(nanmean(data2use(:,trIdx,:),2));
+                                    
+                                    for iwin = 1:size(data2use,3)
+                                        
+                                        coef = polyfit(tt2use(slope_timeframe_index(1):slope_timeframe_index(2)),squeeze(tmp(slope_timeframe_index(1):slope_timeframe_index(2),iwin))',1);% coef gives 2 coefficients fitting r = slope * x + intercept
+                                        binnedData(isub, ibin, isideStim, iwin)=coef(1);
+                                    end
+                            end
                         end
                     end
+
                     
                 case {'N2c_latency','N2i_latency'}
                     for ibin = 1:nbin2use
@@ -568,7 +719,7 @@ for isub = 1:nSub
                         end
                     end
                     
-                case {'RT_window','N2c','N2i','CPP','CPPr_csd','CPPr_amplitude' ,'beta', 'beta_base', 'pupil_lp','pupilr_lp','pupil_bp','pupilr_bp'}
+                case {'N2c','N2i','CPP','CPPr_csd','CPPr_amplitude', 'beta_pretarget_amplitude', 'beta_response_amplitude', 'beta_base_response_amplitude', 'pupil_lp','pupilr_lp','pupil_bp','pupilr_bp','RT_window','allPupil_lp_baseline_window','allPupil_lp_response_window'}
                     % get average data in time window from time series data
                     tIdx = (tt2use>=twin_bar(1) & tt2use<=twin_bar(2));
                     
@@ -579,6 +730,21 @@ for isub = 1:nSub
                                 binnedData(isub, ibin, isideStim) = squeeze(mean(mean(data2use(tIdx,(binning2use==ibin) & trIdx),1),2));
                             else
                                 binnedData(isub, ibin, isideStim) = squeeze(nanmean(nanmean(data2use(tIdx,binning2use==ibin),1),2));
+                            end
+                        end
+                    end                 
+                    
+                case 'CPPr_amplitude_var'
+                    % get average data in time window from time series data
+                    tIdx = (tt2use>=twin_bar(1) & tt2use<=twin_bar(2));
+                    
+                    for ibin = 1:nbin2use
+                        for isideStim = 1:sideInfo
+                            if sideInfo > 1
+                                trIdx = (allSideStimtr==isideStim);
+                                binnedData(isub, ibin, isideStim) = var(squeeze(mean(data2use(tIdx,(binning2use==ibin) & trIdx),1)));
+                            else
+                                binnedData(isub, ibin, isideStim) = var(squeeze(mean(data2use(tIdx,binning2use==ibin),1)));
                             end
                         end
                     end
@@ -657,25 +823,65 @@ for isub = 1:nSub
                             
                         end
                     end
-                case {'CPPr_slope', 'CPPr_csd_slope'}
+                case {'CPPr_slope', 'CPPr_csd_slope', 'CPPr_csd_slope_window'}
                     
-                    if isub == 1
-                        binnedData = NaN(nSub, nbin2use, sideInfo);
-                    end
-                    tmpbinnedData = NaN(nbin2use, sideInfo, size(data2use,1));
+
+%                     tmpbinnedData = NaN(nbin2use, sideInfo, size(data2use,1));
                     
                     for ibin = 1:nbin2use
                         for isideStim = 1:sideInfo
                             if sideInfo > 1
-                                trIdx = (allSideStimtr==isideStim);
-                                tmpbinnedData(ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin)& trIdx),2));
+                                trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
                             else
-                                tmpbinnedData(ibin, isideStim, :) = squeeze(mean(data2use(:,(binning2use==ibin)),2));
+                                trIdx = (binning2use==ibin);
+                            end
+                            
+                            
+                            switch type
+                                case {'CPPr_slope', 'CPPr_csd_slope'}
+                                    if isub == 1 && ibin == 1 && isideStim == 1
+                                        binnedData = NaN(nSub, nbin2use, sideInfo);
+                                    end
+                                    
+                                    tmpbinnedData               = squeeze(mean(data2use(:, trIdx),2));
+                                    [binnedData(isub,ibin,:)]   = getSlopeCPP(tmpbinnedData, sideInfo, subject_folder{itmpsub}, tr,side_tags, plotCPP, twin_bar,2);
+                                case 'CPPr_csd_slope_window'
+                                    if isub == 1 && ibin == 1 && isideStim == 1
+                                        binnedData = NaN(nSub, nbin2use, sideInfo, size(data2use,3));
+                                    end
+                                    
+                                    tmpbinnedData = squeeze(nanmean(data2use(:, trIdx, :),2));
+                                    for iwin = 1:size(data2use,3)
+                                        [binnedData(isub,ibin,:, iwin)]           = getSlopeCPP(squeeze(tmpbinnedData(:,iwin)), sideInfo, subject_folder{itmpsub}, tr,side_tags, plotCPP, twin_bar,2);
+                                    end
                             end
                         end
-%                         [CPP_side_slope1(isub,ibin,:)]       = getSlopeCPP(squeeze(tmpbinnedData(isub,ibin,:,:)), sideInfo, subject_folder{itmpsub}, tr,side_tags, plotCPP,1);
-                        [binnedData(isub,ibin,:)]       = getSlopeCPP(squeeze(tmpbinnedData(ibin,:,:)), sideInfo, subject_folder{itmpsub}, tr,side_tags, plotCPP,2);
+%                         [CPP_side_slope1(isub,ibin,:)]       = getSlopeCPP(squeeze(tmpbinnedData(isub,ibin,:,:)), sideInfo, subject_folder{itmpsub}, tr,side_tags, plotCPP, twin_bar,1);
                         
+                    end
+                    
+
+                case {'CPPr_csd_slope_var'}
+                    
+                    if isub == 1
+                        binnedData = NaN(nSub, nbin2use, sideInfo);
+                    end
+                    
+                    allSlopes = NaN(length(binning2use),1);
+                    trIdx = find(binning2use);
+                    for itrial = 1:length(trIdx)
+                        allSlopes(trIdx(itrial)) = getSlopeCPP(squeeze(data2use(:,trIdx(itrial))), 1, subject_folder{itmpsub}, tr,side_tags, plotCPP,twin_bar,2);
+                    end
+                        
+                    for ibin = 1:nbin2use
+                        for isideStim = 1:sideInfo
+                            if sideInfo > 1
+                                trIdx = (allSideStimtr==isideStim);
+                                binnedData(isub,ibin,isideStim) = var(allSlopes(binning2use==ibin)& trIdx);
+                            else
+                                binnedData(isub,ibin,isideStim) = var(allSlopes(binning2use==ibin));
+                            end
+                        end                        
                     end
             end
             
@@ -687,19 +893,15 @@ for isub = 1:nSub
             for ibin = 1:nbin2use
                 for isideStim = 1:sideInfo
                     if sideInfo > 1
-                        trIdx = (allSubject==isub & allSideStimtr==isideStim);
-                        binnedData(isub,ibin,isideStim,:,:) = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) & trIdx ))),3)));
-                        
-                        if ~isempty(find(isnan(binnedData)))
-                            keyboard
-                        end
-                    else
-                        
-                        binnedData(isub,ibin,isideStim,:,:) = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) ))),3)));
-                        
-                        if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:,:))))
-                            keyboard
-                        end
+                        trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
+                    else  
+                        trIdx = (binning2use==ibin);
+                    end
+
+                    binnedData(isub,ibin,isideStim,:,:) = squeeze(abs(mean(exp(1i*(data2use(:, :, trIdx))),3)));
+                    
+                    if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:,:))))
+                        keyboard
                     end
                 end
             end
@@ -712,32 +914,21 @@ for isub = 1:nSub
             for ibin = 1:nbin2use
                 for isideStim = 1:sideInfo
                     if sideInfo > 1
-                        trIdx = (allSideStimtr==isideStim);
-%  
-                        tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) & trIdx ))),3)));
-
-                        [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
-                        [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
-
-                        binnedData(isub,ibin,isideStim,:) = mean(tmp(:,f2plot(1):f2plot(2)),2);
-                        
-                        if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:))))
-                            keyboard
-                        end
-
-                    else
-                        
-                        tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) ))),3)));
-
-                        [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
-                        [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
-
-                        binnedData(isub,ibin,isideStim,:) = mean(tmp(:,f2plot(1):f2plot(2)),2);
-                        
-                        if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:))))
-                            keyboard
-                        end
+                        trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
+                    else  
+                        trIdx = (binning2use==ibin);
                     end
+
+                    tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, trIdx))),3)));
+                    [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
+                    [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
+                    
+                    binnedData(isub,ibin,isideStim,:) = mean(tmp(:,f2plot(1):f2plot(2)),2);
+                    
+                    if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:))))
+                        keyboard
+                    end
+
                 end
             end
 
@@ -749,42 +940,60 @@ for isub = 1:nSub
             clear tmp
             for ibin = 1:nbin2use
                 for isideStim = 1:sideInfo
+                    
                     if sideInfo > 1
-                        trIdx = (allSideStimtr==isideStim);
- 
-                        
-                        tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) & trIdx ))),3)));
-
-                        [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
-                        [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
-                        
-                        [~,t2plot(1)] = min(abs(t2test(1) - tt2use));
-                        [~,t2plot(2)] = min(abs(t2test(2) - tt2use));
-
-                        binnedData(isub,ibin,isideStim) = mean(mean(tmp(t2plot(1):t2plot(2),f2plot(1):f2plot(2)),1),2);
-                        
-                        if ~isempty(find(isnan(binnedData(isub,ibin,isideStim))))
-                            keyboard
-                        end
-
+                        trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
                     else
-                        
-                        tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, (binning2use==ibin) ))),3)));
-
-                        [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
-                        [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
-                        
-                        [~,t2plot(1)] = min(abs(t2test(1) - tt2use));
-                        [~,t2plot(2)] = min(abs(t2test(2) - tt2use));
-
-                        binnedData(isub,ibin,isideStim) = mean(mean(tmp(t2plot(1):t2plot(2),f2plot(1):f2plot(2)),1),2);
-                        
-                        if ~isempty(find(isnan(binnedData(isub,ibin,isideStim))))
-                            keyboard
-                        end
+                        trIdx = (binning2use==ibin);
+                    end
+                    
+                    tmp = squeeze(abs(mean(exp(1i*(data2use(:, :, trIdx))),3)));
+                    
+                    [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
+                    [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
+                    
+                    [~,t2plot(1)] = min(abs(t2test(1) - tt2use));
+                    [~,t2plot(2)] = min(abs(t2test(2) - tt2use));
+                    
+                    binnedData(isub,ibin,isideStim) = mean(mean(tmp(t2plot(1):t2plot(2),f2plot(1):f2plot(2)),1),2);
+                    
+                    if ~isempty(find(isnan(binnedData(isub,ibin,isideStim))))
+                        keyboard
                     end
                 end
             end
+        case 'ITPC_window'
+            if isub == 1
+                binnedData = NaN(nSub, nbin2use, sideInfo, size(data2use,4));
+            end
+            
+            clear tmp
+            for ibin = 1:nbin2use
+                for isideStim = 1:sideInfo
+                    if sideInfo > 1
+                        trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
+                    else
+                        trIdx = (binning2use==ibin);
+                    end
+                    
+                    tmp = squeeze(abs(nanmean(exp(1i*(data2use(:, :, trIdx, :))),3)));
+                    
+                    [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
+                    [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
+                    
+                    [~,t2plot(1)] = min(abs(t2test(1) - tt2use));
+                    [~,t2plot(2)] = min(abs(t2test(2) - tt2use));
+                    
+                    binnedData(isub,ibin,isideStim,:) = mean(mean(tmp(t2plot(1):t2plot(2),f2plot(1):f2plot(2),:),1),2);
+                    
+                    if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:))))
+                        keyboard
+                    end
+                end
+            end
+            
+            
+            
         otherwise
             error('data type not defined')
     end

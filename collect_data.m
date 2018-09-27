@@ -39,7 +39,7 @@ allvalidtr=[]; allvalidtr_neg100_0=[]; allvalidtr_neg500_0=[];
 allvalidtr_neg100_RT_200=[]; allvalidtr_neg500_RT_200=[];
 
 %RT etc
-allRT=[]; allRT_log=[]; allRT_zscore=[]; allValidRT=[]; allRT_window=[]; allRTz_window=[]; allValidRT_window=[];
+allRT=[]; allRT_log=[]; allRT_zscore=[]; allValidRT=[]; 
 
 %N2
 allN2c=[]; allN2i=[]; allN2c_topo=[];
@@ -51,11 +51,11 @@ allAlphaRh_preTarget=[]; allAlphaLh_preTarget=[];
 allAlpha_preTarget=[]; allAlphaAsym_preTarget=[]; allAlpha_preTarget_topo=[]; allAlphaAsym_preTarget_topo=[];
 
 % beta
-allBeta_postTarget=[]; allBeta_preResponse_mean=[]; allBeta_preResponse=[];allBeta_preResponse_topo=[];
+allBeta_postTarget=[]; allBeta_base_postTarget=[]; allBeta_preResponse=[]; allBeta_base_preResponse=[]; allBeta_preResponse_topo=[];
 
 % SPG
-allN2c_power = []; allN2c_phase = [];
-allN2c_256_power = []; allN2c_256_phase = [];
+allN2c_power = []; allN2c_phase = []; allN2i_power = []; allN2i_phase = [];
+allN2c_256_power = []; allN2c_256_phase = []; allN2i_256_power = []; allN2i_256_phase = [];
 allCPP_power = []; allCPP_phase = [];
 
 %pupil.
@@ -64,6 +64,9 @@ allPupil_bp=[]; allPupilr_bp=[];
 allPupil_lp_baseline=[]; allPupil_bp_baseline=[];
 allPupil_lp_RT_neg200_200=[]; allPupil_bp_RT_neg200_200=[];
 allPupil_lp_linproj_resp_locked_neg500_200=[];allPupil_bp_linproj_resp_locked_neg500_200=[];
+allPupil_lp_baseline_zscore = [];
+% trial window index
+allTrial_window=[]; allTrial_window_valid_RT=[]; allTrial_window_valid_neg100_RT_200=[]; allTrial_window_valid_neg500_0=[];
 
 clear validtrials filenames
 tmpsub=0;
@@ -108,11 +111,7 @@ for isub = single_participants
     allRT_log           = [allRT_log    ; DAT.subRT_log];
     allRT_zscore        = [allRT_zscore ; DAT.subRT_zscore];
     allValidRT          = [allValidRT   ; DAT.validRT];
-    
-    allRT_window         = [allRT_window         DAT.subRT_window'];
-    allRTz_window        = [allRTz_window        DAT.subRTz_window'];
-    allValidRT_window    = [allValidRT_window    DAT.validRT_window'];
-    
+        
     %     % erp
     %     allERP              = cat(3, allERP,        ERP);
     %     allERPr             = cat(3, allERPr,       ERPr);
@@ -141,17 +140,22 @@ for isub = single_participants
     allAlphaAsym_preTarget_topo      = [allAlphaAsym_preTarget_topo     DAT.alphaAsym_preTarget_topo];
     
     %beta
-    allBeta_preResponse_mean         = [allBeta_preResponse_mean        ; DAT.beta_preResponse_mean];
-    allBeta_postTarget               = [allBeta_postTarget              DAT.beta_postTarget];
-    allBeta_preResponse         	 = [allBeta_preResponse             DAT.beta_preResponse];
-    allBeta_preResponse_topo         = [allBeta_preResponse_topo        DAT.beta_preResponse_topo];
+    allBeta_postTarget              = [allBeta_postTarget           DAT.beta_postTarget];
+    allBeta_base_postTarget         = [allBeta_base_postTarget      DAT.beta_base_postTarget];
+    allBeta_preResponse             = [allBeta_preResponse          DAT.beta_preResponse];
+    allBeta_base_preResponse        = [allBeta_base_preResponse     DAT.beta_base_preResponse];
+    allBeta_preResponse_topo        = [allBeta_preResponse_topo     DAT.beta_preResponse_topo];
     
-    allN2c_power = cat(3,allN2c_power, DAT.SPG.N2c_power);
-    allN2c_phase = cat(3,allN2c_phase, DAT.SPG.N2c_phase);
-    allN2c_256_power = cat(3,allN2c_256_power, DAT.SPG.N2c_256_power);
-    allN2c_256_phase = cat(3,allN2c_256_phase, DAT.SPG.N2c_256_phase);
-    allCPP_power = cat(3,allCPP_power, DAT.SPG.CPP_power);
-    allCPP_phase = cat(3,allCPP_phase, DAT.SPG.CPP_phase);
+    allN2c_power        = cat(3,allN2c_power, DAT.SPG.N2c_power);
+    allN2c_phase        = cat(3,allN2c_phase, DAT.SPG.N2c_phase);
+    allN2c_256_power    = cat(3,allN2c_256_power, DAT.SPG.N2c_256_power);
+    allN2c_256_phase    = cat(3,allN2c_256_phase, DAT.SPG.N2c_256_phase);
+    allN2i_power        = cat(3,allN2i_power, DAT.SPG.N2i_power);
+    allN2i_phase        = cat(3,allN2i_phase, DAT.SPG.N2i_phase);
+    allN2i_256_power    = cat(3,allN2i_256_power, DAT.SPG.N2i_256_power);
+    allN2i_256_phase    = cat(3,allN2i_256_phase, DAT.SPG.N2i_256_phase);
+    allCPP_power        = cat(3,allCPP_power, DAT.SPG.CPP_power);
+    allCPP_phase        = cat(3,allCPP_phase, DAT.SPG.CPP_phase);
     
     stft_times      = DAT.spectral_t;
     stft_timesr     = DAT.spectral_tr;
@@ -169,13 +173,25 @@ for isub = single_participants
     
     allPupil_lp_baseline       = [allPupil_lp_baseline ; DAT.pupil.baseline.lp];
     allPupil_bp_baseline       = [allPupil_bp_baseline ; DAT.pupil.baseline.bp];
-    
+
+    allPupil_lp_baseline_zscore       = [allPupil_lp_baseline_zscore ; DAT.pupil.baseline_zscore.lp];
+
     allPupil_bp_RT_neg200_200   = [allPupil_bp_RT_neg200_200 ; DAT.pupil.RT.bp.neg200_200];
     allPupil_lp_RT_neg200_200   = [allPupil_lp_RT_neg200_200 ; DAT.pupil.RT.lp.neg200_200];
     
     allPupil_lp_linproj_resp_locked_neg500_200      = [allPupil_lp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.lp.resp_locked_neg500_200];
     allPupil_bp_linproj_resp_locked_neg500_200      = [allPupil_bp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.bp.resp_locked_neg500_200];
     
+    if isub == single_participants(1)
+        trialadd = 0;
+    else
+        trialadd = max(allTrial_window(:));
+    end
+    allTrial_window                         = [allTrial_window                      (DAT.trialWindow_idx' + trialadd)];
+    allTrial_window_valid_RT                = [allTrial_window_valid_RT             DAT.trialWindow_valid_RT'];
+    allTrial_window_valid_neg100_RT_200     = [allTrial_window_valid_neg100_RT_200  DAT.trialWindow_valid_neg100_RT_200'];
+    allTrial_window_valid_neg500_0          = [allTrial_window_valid_neg500_0       DAT.trialWindow_valid_neg500_0'];
+
     clear DAT
 end
 

@@ -101,9 +101,7 @@ end
 pupil.lp  = pupil.lp/pupil.scaleFactor.lp; %normalise 
 pupil.bp  = pupil.bp/pupil.scaleFactor.bp; %normalise 
 
-%% zscore 
-% Don't do this! it messes with the linear projection! 
-% 
+
 
 %% get response locked pupil
 RTs = RT/1000*fs; %RT in samples
@@ -153,5 +151,16 @@ baseline     = mean(pupil.bp(find(tt>=set.BL(1) & tt<=set.BL(2)),:),1);
 pupil.bp     = pupil.bp  - repmat(baseline,[size(pupil.bp,1)],1); % baseline full erp
 pupilr.bp    = pupilr.bp - repmat(baseline,[size(pupilr.bp,1)],1); % baseline full erp
 
+%% zscore 
+
+pupil.baseline_zscore.lp = NaN(size(pupil.baseline.lp));
+pupil.baseline_zscore.bp = NaN(size(pupil.baseline.lp));
+pupil.RT_zscore.lp.neg200_200 = NaN(size(pupil.baseline.lp));
+pupil.RT_zscore.bp.neg200_200 = NaN(size(pupil.baseline.lp));
+
+pupil.baseline_zscore.lp(validtr) = zscore(pupil.baseline.lp(validtr));
+pupil.baseline_zscore.bp(validtr) = zscore(pupil.baseline.bp(validtr));
+pupil.RT_zscore.lp.neg200_200(validtr) = zscore(pupil.RT.lp.neg200_200(validtr));
+pupil.RT_zscore.bp.neg200_200(validtr) = zscore(pupil.RT.bp.neg200_200(validtr));
 
 

@@ -31,6 +31,7 @@ function analyse_CDT(isub, single_participants, dataset, fileExt)
 % https://github.com/jochemvankempen/2018_Monash
 %
 % -------------------------------------------------------------------------
+%%
 % analyse single trial data, for the continuous dots task
 
 close all
@@ -208,15 +209,15 @@ for ifile = 1:length(loadfilenames)
     initialise_variables
     
     %% ERP
-    tmp_erp_csd=double(erp_LPF_35Hz_CSD);%used for CPP
-    %     tmp_erp_csd=double(erp_LPF_8Hz_CSD);%used for CPP
+        tmp_erp_csd=double(erp_LPF_35Hz_CSD);%used for CPP
+%     tmp_erp_csd=double(erp_LPF_8Hz_CSD);%used for CPP
     
     if doCSD
         tmp_erp=double(erp_LPF_35Hz_CSD);
-        %         tmp_erp=double(erp_LPF_8Hz_CSD);
+%         tmp_erp=double(erp_LPF_8Hz_CSD);
     else
         tmp_erp=double(erp_LPF_35Hz);
-        %         tmp_erp=double(erp_LPF_8Hz);
+%         tmp_erp=double(erp_LPF_8Hz);
     end
     
     % Baseline erp
@@ -285,23 +286,23 @@ for ifile = 1:length(loadfilenames)
             ititr(idx_trFile,1)      = allITI';
     end
     
-    % extract info from trials preceding and following current trial
-    allBlocks = unique(blockIdx);
-    for iblock = 1:length(allBlocks)
-        trIdx = find(blockIdx==allBlocks(iblock));
-        
-        for itrial = 1:length(find(trIdx))
-            saveIdx = 1:RTwinsize*2+1;
-            trwin = trIdx(itrial) + [-RTwinsize:RTwinsize];
-            saveIdx = saveIdx(trwin >= trIdx(1) & trwin <= trIdx(end));
-            trwin = trwin(trwin >= trIdx(1) & trwin <= trIdx(end));
-            
-            subRTz_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT_zscore(trwin);
-            subRT_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT(trwin);
-            validRT_window(idx_trFile(trIdx(itrial)), saveIdx) = validRT(trwin);
-        end
-    end
-    
+%     % extract info from trials preceding and following current trial
+%     allBlocks = unique(blockIdx);
+%     for iblock = 1:length(allBlocks)
+%         trIdx = find(blockIdx==allBlocks(iblock));
+%         
+%         for itrial = 1:length(find(trIdx))
+%             saveIdx = 1:RTwinsize*2+1;
+%             trwin = trIdx(itrial) + [-RTwinsize:RTwinsize];
+%             saveIdx = saveIdx(trwin >= trIdx(1) & trwin <= trIdx(end));
+%             trwin = trwin(trwin >= trIdx(1) & trwin <= trIdx(end));
+%             
+%             subRTz_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT_zscore(trwin);
+%             subRT_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT(trwin);
+%             validRT_window(idx_trFile(trIdx(itrial)), saveIdx) = validRT(trwin);
+%         end
+%     end
+%     
     switch dataset
         case {'bigDots','CD'}
             
@@ -437,13 +438,14 @@ for ifile = 1:length(loadfilenames)
         end
         % rename, to keep consistent whatever method is used
         beta_TSE = STFT;
-%         beta_TSE_base = STFT-repmat(baseline_beta,[1,size(STFT,2),1]); % baseline full erp
+        baseline_beta = mean(STFT(:,find(STFT_time>=BL_spectrum(1) & STFT_time<=BL_spectrum(2)),:),2);
+        beta_TSE_base = STFT-repmat(baseline_beta,[1,size(STFT,2),1]); % baseline full erp
         
         STFT_timer= -600:unique(diff(STFT_time)):80;
         %Response locked STFT time in samples
         STFT_timers = (1:length(STFT_timer))-length(find(STFT_timer<=0));
-        STFTr = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
-%         STFTr_base = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
+        STFTr       = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
+        STFTr_base  = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
         
         for itrial = 1:size(tmp_erp,3)
             if ~validrlock(idx_trFile(itrial))
@@ -451,11 +453,11 @@ for ifile = 1:length(loadfilenames)
             end
             [~,RTsamp] = min(abs(STFT_time*fs/1000-allRT(itrial))); % get the sample point of the RT.
             STFTr(:,:,itrial) = STFT(:,RTsamp+STFT_timers,itrial);
-%             STFTr_base(:,:,itrial) = beta_TSE_base(:,RTsamp+STFT_timers,itrial);
+            STFTr_base(:,:,itrial) = beta_TSE_base(:,RTsamp+STFT_timers,itrial);
         end
         
         betar_TSE = STFTr;
-%         betar_TSE_base = STFTr_base;
+        betar_TSE_base = STFTr_base;
         
         spectral_t = STFT_time;
         spectral_tr = STFT_timer;
@@ -465,21 +467,21 @@ for ifile = 1:length(loadfilenames)
     ch_beta(isub) = getChannelName(ch_beta_str, channelConfig);
     
     % stim locked beta
-    beta_postTarget(:,idx_trFile) = squeeze(mean(beta_TSE(ch_beta(isub), :, :),1));
+    beta_postTarget(:,idx_trFile)       = squeeze(mean(beta_TSE(ch_beta(isub), :, :),1));
+    beta_base_postTarget(:,idx_trFile)  = squeeze(mean(beta_TSE_base(ch_beta(isub), :, :),1));
     
     % response locked beta
-    beta_preResponse(:,idx_trFile) = squeeze(mean(betar_TSE(ch_beta(isub), :, :),1));
-    
-    tIdx = spectral_tr>t_preResponse_beta(1) & spectral_tr<t_preResponse_beta(2);
-    beta_preResponse_mean(idx_trFile,1)      = squeeze(mean(mean(betar_TSE(ch_beta(isub), tIdx, :),1),2));
-        
+    beta_preResponse(:,idx_trFile)      = squeeze(mean(betar_TSE(ch_beta(isub), :, :),1));
+    beta_base_preResponse(:,idx_trFile) = squeeze(mean(betar_TSE_base(ch_beta(isub), :, :),1));
+            
     %post target beta, keeping all channel info, for topoplots
-    tIdx = spectral_t>t_postTarget_beta(1) & spectral_t<t_postTarget_beta(2);
+    tIdx = spectral_t>=t_postTarget_beta(1) & spectral_t<=t_postTarget_beta(2);
     beta_postTarget_topo(1:nChan,idx_trFile) = squeeze(mean(beta_TSE(1:nChan, tIdx, :),2));
     
     %post target beta, keeping all channel info, for topoplots
     tIdx = spectral_tr>t_preResponse_beta(1) & spectral_tr<t_preResponse_beta(2);
-    beta_preResponse_topo(1:nChan,idx_trFile) = squeeze(mean(betar_TSE(1:nChan, tIdx, :),2));
+    beta_preResponse_topo(1:nChan,idx_trFile)       = squeeze(mean(betar_TSE(1:nChan, tIdx, :),2));
+    beta_base_preResponse_topo(1:nChan,idx_trFile)  = squeeze(mean(betar_TSE_base(1:nChan, tIdx, :),2));
     
     
     
@@ -524,19 +526,38 @@ lpPupil.lp.resp_locked_neg500_200(validtr2use) = linearProjection(pupilr.lp(tIdx
 lpPupil.bp.resp_locked_neg500_200(validtr2use) = linearProjection(pupilr.bp(tIdx,validtr2use),tr(tIdx));
 
 
+%% get trial indices to extract info from trials preceding and following current trial
+allBlocks = unique(blockIdx);
+for iblock = 1:length(allBlocks)
+    trIdx = find(blockIdx==allBlocks(iblock));
+    
+    for itrial = 1:length(find(trIdx))
+        saveIdx = 1:RTwinsize*2+1;
+        trwin = trIdx(itrial) + [-RTwinsize:RTwinsize];
+        saveIdx = saveIdx(trwin >= trIdx(1) & trwin <= trIdx(end));
+        trwin = trwin(trwin >= trIdx(1) & trwin <= trIdx(end));
+        
+        trialWindow_idx(idx_trFile(trIdx(itrial)), saveIdx) = trwin;
+        trialWindow_valid_RT(idx_trFile(trIdx(itrial)), saveIdx) = validRT(trwin);
+        trialWindow_valid_neg100_RT_200(idx_trFile(trIdx(itrial)), saveIdx) = validtr.neg100_RT_200(trwin);
+        trialWindow_valid_neg500_0(idx_trFile(trIdx(itrial)), saveIdx) = validtr.neg500_0(trwin);
+    end
+end
+
 
 %% save
+%     'subRT_window','subRTz_window','validRT_window',...
 save(savefilename, ...
     'trialIdx','blockIdx','blockTrialIdx','sideStimtr','motiontr','ititr','hits','misses','validrlock','subject',...
     'validtr','validtr_eye',...
     'subRT','subRT_log','subRT_zscore','validRT',...
-    'subRT_window','subRTz_window','validRT_window',...
     'N2c','N2i','N2c_topo','N2i_topo',...
     'CPP','CPP_csd','CPPr','CPPr_csd','CPP_topo',...
     'spectral_t','spectral_tr','alpha_preTarget','alphaRh_preTarget','alphaLh_preTarget','alpha_preTarget_topo','alphaAsym_preTarget','alphaAsym_preTarget_topo',...
-    'beta_postTarget','beta_preResponse','beta_preResponse_topo','beta_postTarget_topo', 'beta_preResponse_mean', ...
+    'beta_postTarget','beta_base_postTarget','beta_preResponse','beta_base_preResponse','beta_preResponse_topo','beta_base_preResponse_topo','beta_postTarget_topo', ...
     'SPG',...
-    'pupil','pupilr','lpPupil',...
+    'pupil','pupilr','lpPupil','validPupil_window',...
+    'trialWindow_idx','trialWindow_valid_RT','trialWindow_valid_neg100_RT_200','trialWindow_valid_neg500_0',...
     '-v7.3')
 
 toc

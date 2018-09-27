@@ -6,6 +6,7 @@ function [figHandle, figSet] = figInit(type,figNum,varargin)
 % INPUT
 %     fignum: number the figure will have
 %     varargin: optional arguments
+%         - figureType: 'Manuscript' (default), 'Poster' (will lead to different font sizes and line width, etc.)
 %         - width: decimal number, width of figure will be a fraction of A4
 %         - height: see width
 %         - margin: 
@@ -25,6 +26,9 @@ function [figHandle, figSet] = figInit(type,figNum,varargin)
 
 getVarargin
 
+if ~exist('figureType','var') 
+    figureType = 'Manuscript';
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% default settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,23 +37,45 @@ getVarargin
 defSet.units        = 'centimeters';
 defSet.paperType    = 'a4';
 defSet.paperSize    = [21.0 29.7];
-
-%%% axes
-defSet.axLineWidth      = 2;
-defSet.axFontsize       = 8; % ticks
-defSet.axFontsize_in    = 6; % ticks inset
-defSet.axLabFontsize    = 10; % labels/legends
-
-%%% plots
-defSet.plLineWidth      = 2.5;% main plots
-defSet.plLineWidth_in   = 1.5;% insets
-defSet.plFontsize       = 8; % inside plot text
-defSet.MarkerSize       = 8;
+        
+switch figureType
+    case 'Manuscript'
+        
+        
+        %%% axes
+        defSet.axLineWidth      = 2;
+        defSet.axFontsize       = 8; % ticks
+        defSet.axFontsize_in    = 6; % ticks inset
+        defSet.axLabFontsize    = 10; % labels/legends
+        defSet.axTitleFontsize  = 14; % labels/legends
+        
+        %%% plots
+        defSet.plLineWidth      = 2.5;% main plots
+        defSet.plLineWidth_in   = 1.5;% insets
+        defSet.plFontsize       = 8; % inside plot text
+        defSet.MarkerSize       = 8;
+        
+    case 'Poster'
+%         defSet.paperType    = 'a4';
+%         defSet.paperSize    = [118.9 84.1];
+        
+        %%% axes
+        defSet.axLineWidth      = 3;
+        defSet.axFontsize       = 12; % ticks
+        defSet.axFontsize_in    = 10; % ticks inset
+        defSet.axLabFontsize    = 14; % labels/legends
+        
+        %%% plots
+        defSet.plLineWidth      = 3.5;% main plots
+        defSet.plLineWidth_in   = 2.5;% insets
+        defSet.plFontsize       = 12; % inside plot text
+        defSet.MarkerSize       = 12;
+        defSet.axTitleFontsize  = 18; % labels/legends
+end
 
 if ~exist('set','var') 
     figSet = defSet;
 end
-
 if ~exist('width','var')
     width = 1;
 end

@@ -30,13 +30,13 @@ end
 if recognizedPC
     switch goToState
         case 'highPerformance'
-            fprintf('switching to high performance mode, preventing sleep')
-            system(['powercfg -setactive ' highPerformance])
+            fprintf('switching to high performance mode, preventing sleep\n');
+            system(['powercfg -setactive ' highPerformance]);
         case 'balanced'
-            fprintf('switching to balanced mode')
-            system(['powercfg -setactive ' balanced])
+            fprintf('switching to balanced mode\n');
+            system(['powercfg -setactive ' balanced]);
         case 'powerSaver'
-            fprintf('switching to powerSaver')
-            system(['powercfg -setactive ' powerSaver])
+            fprintf('switching to powerSaver\n');
+            system(['powercfg -setactive ' powerSaver]);
     end
 end

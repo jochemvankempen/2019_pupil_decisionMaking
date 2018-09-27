@@ -70,9 +70,9 @@ subRT_log(idx_trFile,1)           = zeros(nTrFile,1); %logarithm of RT
 subRT_zscore(idx_trFile,1)        = nan(nTrFile,1); %zscore of logarithm of RT
 validRT(idx_trFile,1)             = false(nTrFile,1); %whether RT was valid
 
-subRT_window(idx_trFile,:)        = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
-subRTz_window(idx_trFile,:)       = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
-validRT_window(idx_trFile,:)      = false(nTrFile,RTwinsize*2+1); %whether RT was valid
+% subRT_window(idx_trFile,:)        = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
+% subRTz_window(idx_trFile,:)       = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
+% validRT_window(idx_trFile,:)      = false(nTrFile,RTwinsize*2+1); %whether RT was valid
 
 % ERP
 rawERP=0;% file gets really big if you do compute this
@@ -106,16 +106,19 @@ alpha_preTarget_topo(1:nChan,idx_trFile)    = zeros(nChan,nTrFile); %ntrial nCha
 alphaAsym_preTarget_topo(1:nChan,idx_trFile)= zeros(nChan,nTrFile); %ntrial nChan nSub
 
 % spectral - beta
-beta_base_postTarget_topo(1:nChan,idx_trFile)   = zeros(nChan,nTrFile); %ntrial nChan nSub
-beta_base_preResponse_mean(idx_trFile,1)  = zeros(nTrFile,1);
-beta_preResponse_mean(idx_trFile,1)       = zeros(nTrFile,1);
+beta_postTarget_topo(1:nChan,idx_trFile)        = zeros(nChan,nTrFile); %ntrial nChan nSub
+beta_preResponse_topo(1:nChan,idx_trFile)       = zeros(nChan,nTrFile); %ntrial nChan nSub
 beta_base_preResponse_topo(1:nChan,idx_trFile)  = zeros(nChan,nTrFile); %ntrial nChan nSub
-
-
 
 %pupil
 lpPupil.bp.resp_locked_neg500_200(idx_trFile,1) = NaN(nTrFile,1);
 lpPupil.lp.resp_locked_neg500_200(idx_trFile,1) = NaN(nTrFile,1);
+
+% trial window
+trialWindow_idx(idx_trFile,:)                   = NaN(nTrFile,RTwinsize*2+1); % for each trial, up to RTwinsize backward and forward
+trialWindow_valid_neg100_RT_200(idx_trFile,:)   = false(nTrFile,RTwinsize*2+1); % whether trial was valid
+trialWindow_valid_neg500_0(idx_trFile,:)        = false(nTrFile,RTwinsize*2+1); % whether trial was valid
+trialWindow_valid_RT(idx_trFile,:)              = false(nTrFile,RTwinsize*2+1); % whether trial was valid
 
 
 

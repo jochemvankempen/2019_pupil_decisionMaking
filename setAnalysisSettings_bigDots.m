@@ -144,8 +144,10 @@ t_postTarget_beta   = [300 600];
 
 beta_power = 2; % 1 = TSE, 2 = STFT
 
-t_preResponse_beta  = [-100 0];
-bandlimits_beta     = [20, 35]; %beta
+t_preResponse_beta      = [-100 0];
+% t_preResponse_beta2     = [-130 -70];
+t_preTarget_beta        = [-100 0];
+bandlimits_beta         = [20, 35]; %beta
 
 ch_beta_str = {'C3'};
 

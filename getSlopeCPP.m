@@ -1,4 +1,4 @@
-function [CPPr_slope] = getSlopeCPP(CPPr, nside, subject_folder, tr, side_tags, plot_slope,type)
+function [CPPr_slope] = getSlopeCPP(CPPr, nside, subject_folder, tr, side_tags, plot_slope,twin,type)
 % These scripts reproduce the analysis in the paper: van Kempen et al.,
 % (2018) 'Behavioural and neural signatures of perceptual evidence
 % accumulation are modulated by pupil-linked arousal'. 
@@ -53,9 +53,10 @@ if type==1
     slope_timeframe_index(1)=slope_timeframe_index(2)-50;%subtract 50samples (i.e. 100ms) from max amplitude index to form slope_timeframe window
     
 elseif type==2
-    
-    slope_timeframe_index(2)=find(tr==-80);%time at response
-    slope_timeframe_index(1)=slope_timeframe_index(2)-50;%subtract 75samples (i.e. 150ms) from max amplitude index to form slope_timeframe window
+    % get time index
+    slope_timeframe_index(1)=find(tr==twin(1));%
+    slope_timeframe_index(2)=find(tr==twin(2));%
+%     slope_timeframe_index(1)=slope_timeframe_index(2)-(diff(twin)/2);%subtract n samples from slope_timeframe_index(2) index to form slope_timeframe window, divide by 2 because fs = 500
 end
 
 %Now find and save CPPr slope
