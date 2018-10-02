@@ -45,30 +45,18 @@ idx_alpha_asym  = strcmpi(allBin2use, 'pretarget_alpha_asym');
 
 idx_N2i         = strcmpi(allBin2use, 'N2i_amplitude_regress_iti_side');
 
+% idx2plot   = idx_BL_bp;
 % idx2plot   = idx_resp;
 idx2plot   = idx_BL_lp;
 
-% idx2plot   = idx_BL_bp;
-% idx2plot   = idx_BL_lp;
-%
-
 % plot Settings
-
 chanlocs = readlocs('cap64.loc'); %biosemi
 [~,plot_chans, exclude_chans] = getChannelName;
-
-figureFileType = 'png';
-% figureFileType = 'jpeg';
-figureFileType = 'eps';
 
 figureFileType = {'png','eps'};
 clear cfg
 cfg.t = t;
 cfg.tr = tr;
-
-
-% plotMarker = {'o','s','d'};
-% plotMarker = {'o','d'};
 plotMarker = {'o','s','d','^','h'};
 
 
@@ -78,17 +66,12 @@ nrow = 1;
 ncol = 3;
 subplotgap = [0.06 0.08];
 
-% fig1 = figure(1);clf
 [figHandle, fSet] = figInit('fig',1, {'height', 1/3; 'width', 6/5});
-% [figHandle, fSet] = figInit('fig',1, {'height', 1/3});
 set(gca,'linewidth',2)
-% set(gcf,'position',[-1420 154 1092 981])
 
 set(gca,'color','none','XColor','k','YColor','k')
 set(gcf,'PaperPositionMode','auto')
-
 set(gca,'fontsize',fSet.plFontsize)
-
 
 switch allBin2use{idx2plot}
     case {'pupil_lp_baseline_regress_iti_side','pupil_bp_baseline_regress_iti_side'}
@@ -170,7 +153,6 @@ ylabel('Normalized pupil diameter','fontsize',fSet.axLabFontsize);
 axis square
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% RT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -180,18 +162,9 @@ figInit('ax');
 
 RT = RT;
 
-% idx2plot    = [find(idx_BL_bp) find(idx2plot)];
-% idx2plot    = [find(idx2plot)];
-% % idx2plot    = [find(idx_BL_lp) find(idx_BL_bp)];
-% idx2plot = idx2plot2;
-
 cfg.ylim.RT     = [470 620];
 cfg.ylim.RT_CV  = [0.195 0.28];
 cfg.ylabel.RT   = 'RT (ms)';
-
-% [stats2report, meanFit, CIFit, SEFit, STATS] = fitlme_pupil_singleVar(MAT, 'RT', 0);
-% [pstring_chi,starstring] = getSignificanceStrings(stats2report(3), 0, 1, '\it p ');
-% betaString = ['\beta_{2} = ' num2str(STATS.Estimate, '%1.3f')];
 
 bin2use = allBin2use{idx2plot};
 filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
@@ -296,14 +269,6 @@ subplot_ax1 = get(gca);
 
 xlim([0.5 nbin2use+0.5])
 
-
-
-
-
-
-
-
-
 saveFigName = [bin2use '_' bintype fileExt '_RT'];
 
 for ifiletype = 1:length(figureFileType)
@@ -317,21 +282,13 @@ for ifiletype = 1:length(figureFileType)
     end
 end
 
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CPP ALL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 setAlpha = 1;
 subplotgap = [0.08 0.07];
-% subplotgap = [0.06 0.07];
 
-% idx2plot    = [find(idx2plot)];
-% idx2plot = idx2plot2;
 figsize = 4/5;
 
 [figHandle, fSet] = figInit('fig', 2, {'width',6/5 ;'height', figsize});
@@ -1558,7 +1515,7 @@ for ifiletype = 1:length(figureFileType)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Supplementary figure N2 ITPC
+%% Supplementary figure N2 ITPC/Power
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [fH, fSet] = figInit('fig', 3, {'height', 2.5/5; 'width',6/5});
@@ -1568,17 +1525,28 @@ ncol = 8;
 subplotgap = [0.09 0.09];
 
 
+data2plot = 'Power';
+% data2plot = 'ITPC';
+
 %%%% ITPC
 %%% imagesc plot
 plotOrder = [1 2; 9 10];
-for iplot = 1:2 % N2c and N2i
+for iplot = 1 % N2c and N2i
     
     switch iplot
         case 1
             %%% N2c
-            N2_2use = N2c_ITPC;
-            N2_2use_band = N2c_ITPC_band;
-            N2_2use_bar = N2c_ITPC_bar;
+            switch data2plot
+                case 'ITPC'
+                    N2_2use = N2c_ITPC;
+                    N2_2use_band = N2c_ITPC_band;
+                    N2_2use_bar = N2c_ITPC_bar;
+                case 'Power'
+                    N2_2use = N2c_power;
+                    N2_2use_band = N2c_power_band;
+                    N2_2use_bar = N2c_power_bar;
+                    
+            end
             t2test      = [200 400];
         case 2
             %%% N2i
@@ -1637,7 +1605,7 @@ plotOrder = [...
     14 15 16;    
     ];
     
-for iplot = 1:4 %N2c/Nci, baseline and pupil response
+for iplot = 3 %N2c/Nci, baseline and pupil response
     
     switch iplot
         case 1
@@ -1658,9 +1626,18 @@ for iplot = 1:4 %N2c/Nci, baseline and pupil response
             t2test      = [250 450];
         case 3
             %%% N2c, pupil baseline
-            N2_2use = N2c_ITPC;
-            N2_2use_band = N2c_ITPC_band;
-            N2_2use_bar = N2c_ITPC_bar;
+            switch data2plot
+                case 'ITPC'
+                    N2_2use = N2c_ITPC;
+                    N2_2use_band = N2c_ITPC_band;
+                    N2_2use_bar = N2c_ITPC_bar;
+                case 'Power'
+                    N2_2use = N2c_power;
+                    N2_2use_band = N2c_power_band;
+                    N2_2use_bar = N2c_power_bar;
+                    
+            end
+
             stats_label = 'N2c_ITPC';
             pupilIdx = idx_BL_lp;
             t2test      = [200 400];
@@ -2035,8 +2012,6 @@ end
 %% Figure 1, copy for CD dataset.
 % in same format as fig 4, so can be pasted together
 
-%
-
 [fH, fSet] = figInit('fig', 3, {'height', 3.5/5; 'width',6/5});
 
 nrow = 3;
@@ -2069,8 +2044,6 @@ cfg.ylim.Pupil      = [-0.1 0.08];
 
 hold on
 
-
-
 xlim(cfg.xlim.Pupil)
 ylim(cfg.ylim.Pupil)
 for ibin = 1:nbin2use
@@ -2082,9 +2055,6 @@ plot([0 0], ylim ,'k','linewidth',1)
 
 xlabel('Time from motion onset (ms)','fontsize',fSet.axLabFontsize);
 ylabel('Normalized pupil diameter','fontsize',fSet.axLabFontsize);
-% axis square
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% RT
@@ -2384,462 +2354,6 @@ xlabel('Pupil bin','fontsize',fSet.axLabFontsize);
 
 
 saveFigName = [bin2use '_' bintype fileExt '_RT_acrossTrials'];
-
-for ifiletype = 1:length(figureFileType)
-    switch figureFileType{ifiletype}
-        case 'eps'
-            %             print(gcf,['-d' figureFileType{ifiletype} 'c'],[paths.pop 'fig' filesep 'p_level' filesep saveFigName '.' figureFileType{ifiletype}])
-            saveas(gcf, [paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.svg'], 'svg');
-            
-        otherwise
-            print(gcf,['-d' figureFileType{ifiletype} ],[paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.' figureFileType{ifiletype}])
-    end
-end
-
-
-
-%% fig 5
-%%%%% development of RT & CPP across trials
-
-% 
-% lme_table = table(plevelWin_Subject, plevelWin_Win, plevelWin5_CPPr_csd_slope_window(:), 'VariableNames',{'Subject','Bin','Y'});
-% [statsreport, ~, ~, ~, STATS, model] = fitlme_pupil_singleVar(lme_table);
-% if strcmpi(model,'linear')
-%     p_N2i(istep) = statsreport(3);
-% elseif strcmpi(model,'quadratic')
-%     p_N2i(istep) = 999;
-% end
-% 
-
-
-[fH, fSet] = figInit('fig', 9, {'height', 5.5/5; 'width',7/5});
-
-ncol = 4;
-subplotgap = [0.03 0.08];
-
-
-allRTnames = {'RT_min5','RT_min4','RT_min3','RT_min2','RT_min1','RT_0','RT_plus1','RT_plus2','RT_plus3','RT_plus4','RT_plus5'};
-
-
-plots = 1:4:4*7;
-iplot = 0;
-rows2plot = [1 2 3 4 5 6 7];
-nrow = length(rows2plot);
-
-for irow = 1:length(rows2plot)
-    row2plot = rows2plot(irow);
-    iplot = iplot+1;
-    switch row2plot
-        case 1
-            data2plot   = RT_window;
-            y_label     = 'RT (Z-score)';
-        case 2
-            data2plot   = RTcv_window;
-            y_label     = 'RTcv';
-        case 3
-            data2plot   = CPPr_csd_slope_window;
-            y_label     = 'CPP build-up rate';
-        case 4
-            data2plot   = CPPr_amplitude_window;
-%             data2plot   = ;
-            y_label     = 'CPP amplitude';
-        case 5
-            data2plot   = CPP_ITPC_window;
-            y_label 	= 'CPP ITPC';
-        case 6
-            data2plot   = {beta_pre_response_slope_window{idx2plot}*-1};
-            y_label 	= 'LHB build-up rate';
-        case 7
-            data2plot   = {beta_base_response_amplitude_window{idx2plot}*-1};
-            y_label 	= 'LHB amplitude';
-    end
-    data_min2   = {squeeze(data2plot{idx2plot}(:,:,:,4))};
-    data_min1   = {squeeze(data2plot{idx2plot}(:,:,:,5))};
-    data_0      = {squeeze(data2plot{idx2plot}(:,:,:,6))};
-    data_plus1  = {squeeze(data2plot{idx2plot}(:,:,:,7))};
-    data_plus2  = {squeeze(data2plot{idx2plot}(:,:,:,8))};
-    
-    hsub = subtightplot(nrow, ncol, [plots(iplot)  plots(iplot)+1 ], subplotgap);
-    figInit('ax');
-    
-    
-    cfg.xlim     = [-5 5];
-    cfg.ylim     = [-0.2 0.2];
-    
-    hold on
-    
-    allx = -5:5;
-    x2plot = -5:5;
-    x2plotIdx = ismember(allx, x2plot);
-    
-    for ibin = 1:nbin2use
-        A = boundedline(x2plot,squeeze(mean(data2plot{idx2plot}(:,ibin,:,x2plotIdx),1)),squeeze(std(data2plot{idx2plot}(:,ibin,:,x2plotIdx),[],1))/sqrt(nSub),'cmap',fSet.colors(ibin,:),'alpha');
-        set(A,'linewidth',fSet.plLineWidth_in)
-    end
-    % plot([0 0], cfg.ylim ,'k','linewidth',1)
-    % plot(x2plot(signRTbin), cfg.ylim(1)*0.9, 'k*','markersize',10)
-    % sigstar(num2cell(find(signRTbin)), pRTbin(signRTbin))
-    xlim(cfg.xlim)
-    % ylim(cfg.ylim)
-    set(gca,'xtick',-5:5)
-    if row2plot == rows2plot(end)
-    xlabel('Trial relative to pupil response','fontsize',fSet.axLabFontsize);
-    end
-    ylabel(y_label,'fontsize',fSet.axLabFontsize);
-    
-    RT2compare = [];
-    clear P
-    bins2compare = [1 2 3 4];
-    % bins2compare = [3];
-    trial2compare = find(x2plotIdx);
-    for itrial = 1:length(trial2compare)
-        RT2compare = [mean(data2plot{idx2plot}(:,bins2compare,:,trial2compare(itrial)),2), data2plot{idx2plot}(:,[5],:,trial2compare(itrial))];
-        
-        [H,P(itrial,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
-    end
-    
-%     signRTbin = false(11,1);
-    if 1
-        [pt,p_masked] = fdr(P,0.05);
-    else
-        p_masked = false(11,1);
-        p_masked(P<0.05) = true;
-    end
-    % pt = 0.05/numel(P) ;
-    % signRTbin(P<pt) = true;
-    P(~p_masked) = 1;
-    [pstring_chi,starstring] = getSignificanceStrings(P, 0, 1);
-    
-    YLIM = get(gca,'ylim');
-    for iP = 1:length(P)
-        text(x2plot(iP), YLIM(2)*0.99, starstring{iP},'fontsize',fSet.axLabFontsize,'HorizontalAlignment','center')
-    end
-    %
-    % axes('position',[0.55 0.6 0.4 0.4]) ; % inset
-    hsub = subtightplot(nrow, ncol, [plots(iplot)+2 plots(iplot)+3], subplotgap);
-    
-    figInit('ax');
-    % set(gca,'XColor',[0.4 0.4 0.4],'YColor',[0.4 0.4 0.4])
-    hold on
-    
-    % bin2use = allBin2use{idx2plot};
-    % filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-    % [stats, mfit] = loadStatsR(filename, 'RT_0',nSub,nbin2use);
-    % [pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-    % betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-    
-    RT2compare = [];
-    x2plot = 1:5:nbin2use*5;
-    C = combnk(1:5,2);
-
-    clear P
-    for ibin = 1:nbin2use
-        RT2compare = [data_min2{idx2plot}(:,ibin), data_min1{idx2plot}(:,ibin), data_0{idx2plot}(:,ibin), data_plus1{idx2plot}(:,ibin), data_plus2{idx2plot}(:,ibin)];
-        
-        
-        for iC = 1:length(C)
-            [H,P(ibin,iC),CI,STATS] = ttest(RT2compare(:,C(iC,1)), RT2compare(:,C(iC,2)));
-        end
-%         [H,P(ibin,2),CI,STATS] = ttest(RT2compare(:,2), RT2compare(:,3));
-%         [H,P(ibin,3),CI,STATS] = ttest(RT2compare(:,3), RT2compare(:,4));
-%         
-        
-        h = bar([x2plot(ibin):x2plot(ibin)+4], mean(RT2compare));
-        h.FaceColor = fSet.colors(ibin,:);
-        
-        plot([x2plot(ibin) x2plot(ibin)], mean(RT2compare(:,1)) + [-std(RT2compare(:,1))/sqrt(nSub) std(RT2compare(:,1))/sqrt(nSub)],'linewidth',1,'color','k')
-        plot([x2plot(ibin)+1 x2plot(ibin)+1], mean(RT2compare(:,2)) + [-std(RT2compare(:,2))/sqrt(nSub) std(RT2compare(:,2))/sqrt(nSub)],'linewidth',1,'color','k')
-        plot([x2plot(ibin)+2 x2plot(ibin)+2], mean(RT2compare(:,3)) + [-std(RT2compare(:,3))/sqrt(nSub) std(RT2compare(:,3))/sqrt(nSub)],'linewidth',1,'color','k')
-        plot([x2plot(ibin)+3 x2plot(ibin)+3], mean(RT2compare(:,4)) + [-std(RT2compare(:,4))/sqrt(nSub) std(RT2compare(:,4))/sqrt(nSub)],'linewidth',1,'color','k')
-        plot([x2plot(ibin)+4 x2plot(ibin)+4], mean(RT2compare(:,5)) + [-std(RT2compare(:,5))/sqrt(nSub) std(RT2compare(:,5))/sqrt(nSub)],'linewidth',1,'color','k')
-        
-    end
-    
-%     signRTbin = false(nbin2use,3);
-    % pt = FDR(P,0.05);
-%     pt = 0.05/numel(P) ;
-    
-    [pt,p_masked] = fdr(P,0.05);
-
-%     signRTbin(P<pt) = true;
-    % signRTbin = find(signRTbin);
-    clear groups
-    for ibin = 1:nbin2use
-        
-        for iC = 1:length(C)
-            if p_masked(ibin,iC)
-%                 groups{ibin,iC} = [x2plot(ibin) x2plot(ibin)+1] + (iC-1);
-                groups{ibin,iC} = [C(iC,1) C(iC,2)] + x2plot(ibin) - 1;
-            end
-        end
-        
-    end
-    if exist('groups','var')
-        groups = groups(:);
-        groups(cellfun('isempty', groups)) = [];
-        sigstar(groups(:), P(p_masked))
-    end
-    % P = P(:);
-    
-    
-    set(gca,'xtick',1:25)
-    xTicks = get(gca, 'xtick');
-
-    YLIM = ylim;
-    if irow==1
-        text(23,YLIM(1)*0.5, {'Trial index'},'horizontalalignment','center')
-        text(21,YLIM(1)*0.8, {'-2'},'horizontalalignment','center')
-        text(22,YLIM(1)*0.8, {'-1'},'horizontalalignment','center')
-        text(23,YLIM(1)*0.8, {'0'},'horizontalalignment','center')
-        text(24,YLIM(1)*0.8, {'1'},'horizontalalignment','center')
-        text(25,YLIM(1)*0.8, {'2'},'horizontalalignment','center')
-        A = get(gca);
-        plot([21 21],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-        plot([22 22],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-        plot([23 23],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-        plot([24 24],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-        plot([25 25],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-    end
-    % get(gca,'
-    % xtickloc =
-    
-    set(gca,'xtick',[3:5:nbin2use*5],'xticklabel',1:nbin2use)
-    if row2plot == rows2plot(end)
-        xlabel('Pupil bin','fontsize',fSet.axLabFontsize);
-    end
-    xlim([0 26])
-    
-    % axis square
-end
-
-saveFigName = [bin2use '_' bintype fileExt '_RT_CPP_acrossTrials'];
-
-for ifiletype = 1:length(figureFileType)
-    switch figureFileType{ifiletype}
-        case 'eps'
-            %             print(gcf,['-d' figureFileType{ifiletype} 'c'],[paths.pop 'fig' filesep 'p_level' filesep saveFigName '.' figureFileType{ifiletype}])
-            saveas(gcf, [paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.svg'], 'svg');
-            
-        otherwise
-            print(gcf,['-d' figureFileType{ifiletype} ],[paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.' figureFileType{ifiletype}])
-    end
-end
-
-%% fig 5
-%%%%% development of RT & CPP across trials, with LME results
-
-[fH, fSet] = figInit('fig', 9, {'height', 3.5/5; 'width',6/5});
-
-ncol = 4;
-subplotgap = [0.08 0.07];
-
-% plots = 1:3:3*7;
-% plots = [1 3 ([11 12 13 14 15] - 4)];
-plots = [1 5 3 6 7 8 9 10 11];
-iplot = 0;
-rows2plot = [1 2 3 4 5 6 7];
-nrow = 3;% length(rows2plot);
-
-for irow = 1:length(rows2plot)
-    row2plot = rows2plot(irow);
-%     iplot = iplot+1;
-    ydirection = 1;
-    signText = '%1.2f';
-    switch row2plot
-        case 1
-            data2plot   = RT_window;
-            y_label     = 'RT (Z-score)';
-            LME_label   = 'RT_win5';
-            LME_text    = [0.22 0.19];
-            LME_text    = [-0.04 -0.07];
-            YLIM_mult   = [2 1.05];
-        case 2
-            data2plot   = RTcv_window;
-            y_label     = 'RTcv';
-            LME_label   = 'RT_CV_win5';
-            LME_text    = [0.225 0.215];
-            YLIM_mult   = [0.92 1.05];
-        case 3
-            data2plot   = CPPr_csd_slope_window;
-            y_label     = 'CPP build-up rate';
-            LME_label   = 'CPP_slope_win5';
-            LME_text    = [0.095 0.09];
-            YLIM_mult   = [0.85 1.0];
-        case 4
-            data2plot   = CPPr_amplitude_window;
-            y_label     = 'CPP amplitude';
-            LME_label   = 'CPPr_amplitude_win5';
-            LME_text    = [24 23];
-            YLIM_mult   = [0.98 1.01];
-        case 5
-            data2plot   = CPP_ITPC_window;
-            y_label 	= 'CPP ITPC';
-            LME_label   = 'CPP_ITPC_win5';
-            LME_text    = [0.44 0.43];
-            YLIM_mult   = [0.92 1.02];
-        case 6
-            ydirection = -1;
-            data2plot   = {beta_pre_response_slope_window{idx2plot}} ;
-            y_label 	= 'LHB build-up rate';
-            LME_label   = 'LHB_slope_win5';
-            LME_text    = [-3 -2.9] * 10^-4;
-            YLIM_mult   = [1.1 0.95];
-            signText    = '%1.1e';
-        case 7
-            ydirection = -1;
-            data2plot   = {beta_base_response_amplitude_window{idx2plot}} ;
-            y_label 	= 'LHB amplitude';
-            LME_label   = 'LHB_amplitude_win5';
-            LME_text    = [-0.11 -0.105];
-            YLIM_mult   = [1.1 0.8];
-    end
-    
-    
-    if irow == 1 || irow == 2
-        iplot = iplot+1;
-
-        hsub = subtightplot(nrow, ncol, [plots(iplot):  plots(iplot)+1 ], subplotgap);
-        figInit('ax');
-        cfg.xlim     = [-5 2.2];
-        cfg.ylim     = [-0.2 0.2];
-        
-        hold on
-        
-        allx = -5:5;
-        x2plot = -5:2;
-        x2plotIdx = ismember(allx, x2plot);
-        
-        for ibin = 1:nbin2use
-            A = boundedline(x2plot,squeeze(mean(data2plot{idx2plot}(:,ibin,:,x2plotIdx),1)),squeeze(std(data2plot{idx2plot}(:,ibin,:,x2plotIdx),[],1))/sqrt(nSub),'cmap',fSet.colors(ibin,:),'alpha');
-            set(A,'linewidth',fSet.plLineWidth_in)
-        end
-        
-        xlim(cfg.xlim)
-        % ylim(cfg.ylim)
-        set(gca,'xtick',-5:5)
-%         if row2plot == rows2plot(2)
-            xlabel('Trial relative to pupil response','fontsize',fSet.axLabFontsize);
-%         end
-        ylabel(y_label,'fontsize',fSet.axLabFontsize);
-        
-        RT2compare = [];
-        clear P
-        bins2compare = [1 2 3 4];
-        % bins2compare = [3];
-        trial2compare = find(x2plotIdx);
-        for itrial = 1:length(trial2compare)
-            RT2compare = [mean(data2plot{idx2plot}(:,bins2compare,:,trial2compare(itrial)),2), data2plot{idx2plot}(:,[5],:,trial2compare(itrial))];
-            [H,P(itrial,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
-        end
-        
-        if 1
-            [pt,p_masked] = fdr(P,0.05);
-        else
-            p_masked = false(11,1);
-            p_masked(P<0.05) = true;
-        end
-        P(~p_masked) = 1;
-        [~,starstring] = getSignificanceStrings(P, 0, 1);
-        
-        YLIM = get(gca,'ylim');
-        for iP = 1:length(P)
-            text(x2plot(iP), YLIM(2)*0.99, starstring{iP},'fontsize',fSet.axLabFontsize,'HorizontalAlignment','center')
-        end
-        
-    end
-    %
-    % axes('position',[0.55 0.6 0.4 0.4]) ; % inset
-    iplot = iplot+1;
-    hsub = subtightplot(nrow, ncol, [plots(iplot)], subplotgap);
-    
-    figInit('ax');
-    allx = -5:5;
-    for imodelplot = 2:-1:1
-        switch imodelplot
-            case 1
-                x2plot = -3:2;
-                model_color = [0.5 0.5 0.5];
-            case 2
-                x2plot = -2:2;
-                model_color = fSet.colors(1,:);
-        end
-        
-        x2plotIdx = ismember(allx, x2plot);
-        hold on
-                
-        nwin = length(x2plot);
-        bin2use = allBin2use{idx2plot};
-        filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype '_window(' num2str(nwin) ')' fileExt analyse_CDT_fileExt  ];
-        [stats, mfit] = loadStatsR(filename, LME_label, nSub, nwin);
-        [pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-        
-        switch stats.model
-            case 'Linear'
-                betaString = ['\beta_{1} = ' num2str(stats.B, signText)];
-            case 'Quadratic'
-                betaString = ['\beta_{2} = ' num2str(stats.B, signText)];
-            otherwise
-                betaString = [];
-        end
-        
-
-        if ~isempty(mfit)
-            % plot model fit
-            h = plot(x2plot, mfit.mean, 'linewidth', fSet.plLineWidth_in, 'color', model_color);
-            h = patch([x2plot flip(x2plot)], [mfit.mean flip(mfit.mean)] + [-mfit.se flip(mfit.se)], h.Color);
-            h.FaceAlpha = 0.3;
-            h.EdgeAlpha = 0.3;
-            h.EdgeColor = [h.FaceColor];
-        end
-        
-        trial2compare = find(x2plotIdx);
-        
-
-        if imodelplot == 1
-            
-            % plot se
-            for itrial = 1:length(trial2compare)
-                plot([x2plot(itrial) x2plot(itrial)],...
-                    [squeeze(mean(data2plot{idx2plot}(:,5,:,trial2compare(itrial)),1)) - squeeze(std(data2plot{idx2plot}(:,5,:,trial2compare(itrial)),[],1))/sqrt(nSub) ...
-                    squeeze(mean(data2plot{idx2plot}(:,5,:,trial2compare(itrial)),1)) + squeeze(std(data2plot{idx2plot}(:,5,:,trial2compare(itrial)),[],1))/sqrt(nSub) ],...
-                    'color', 'k','linewidth',fSet.plLineWidth_in);
-            end
-            %     plot plotMarker
-            hPlotMark(ibinType) = plot(x2plot, squeeze(mean(data2plot{idx2plot}(:,5,:,x2plotIdx),1)), plotMarker{1},...
-                'markersize', fSet.MarkerSize,...
-                'color', [0.2 0.2 0.2],'MarkerFaceColor', [0.2 0.2 0.2], 'MarkerEdgeColor', 'k');
-            set(gca,'xtick',x2plot)
-            xlim([x2plot(1) x2plot(end)] + [-1 1])
-            ylabel(y_label,'fontsize',fSet.axLabFontsize);
-        end
-        
-        if imodelplot == 1
-%             plot(x2plot, squeeze(mean(data2plot{idx2plot}(:,5,:,trial2compare),1)),'.k')
-            YLIM = get(gca,'ylim');
-            set(gca,'ylim',YLIM .* YLIM_mult)
-        end
-        
-        
-        if ~isempty(betaString)
-            text(-3.5, LME_text(imodelplot), {[betaString ', ' pstring_chi]}, 'fontsize',fSet.plFontsize, 'Color', model_color)
-        else
-            text(-3.5, LME_text(imodelplot), {[pstring_chi]}, 'fontsize',fSet.plFontsize, 'Color', model_color)
-        end
-        
-        if ydirection == -1
-            set(gca,'ydir','reverse')
-        end
-        
-    end
-    
-    if row2plot == rows2plot(end)
-        xlabel('Trial relative to largest pupil response (Bin 5)','fontsize',fSet.axLabFontsize);
-    end
-    
-    % axis square
-end
-
-saveFigName = [bin2use '_' bintype fileExt '_RT_CPP_acrossTrials'];
 
 for ifiletype = 1:length(figureFileType)
     switch figureFileType{ifiletype}
