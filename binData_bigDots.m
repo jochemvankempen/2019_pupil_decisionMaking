@@ -237,20 +237,12 @@ switch type
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% alpha
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    case 'alpha_asym'
-        preTarget_validtrials = 1;
-        data2use    = allAlphaAsym_preTarget;
-        
     case 'alpha'
         preTarget_validtrials = 1;
         data2use    = allAlpha_preTarget;
     case 'alpha_preTarget_topo'
         preTarget_validtrials = 1;
         data2use    = allAlpha_preTarget_topo;
-        
-    case 'alpha_asym_topo'
-        preTarget_validtrials = 1;
-        data2use    = allAlphaAsym_preTarget_topo;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% beta
@@ -280,6 +272,8 @@ switch type
         
     case 'beta_pre_response_topo'
         data2use    = allBeta_preResponse_topo;
+    case 'beta_base_pre_response_topo'
+        data2use    = allBeta_base_preResponse_topo;
     case {'beta_pre_response_slope'}
         data2use    = allBeta_preResponse;
         tt2use      = stft_timesr;
@@ -384,26 +378,13 @@ for isub = 1:nSub
             %%% Other
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
-        case 'timeOnTask'
-            binningVariable = allTrial(trIdx,1);
-        
-        case 'RT'
-            binningVariable = allRT(trIdx,1);
-
         case 'pretarget_alpha'
             validtr2use = allvalidtr_neg500_RT_200;
             trIdx = allSubject==isub & validtr2use;
 
             binningVariable = allAlpha_preTarget(trIdx,1);
 
-        case 'pretarget_alpha_asym'
-            validtr2use = allvalidtr_neg500_RT_200;
-            trIdx = allSubject==isub & validtr2use;
-
-            binningVariable = allAlphaAsym_preTarget(trIdx,1);
-
         case 'N2i_amplitude_regress_iti_side'
-            
             % n2i time window
             tmp_t2test = 340 + [-50 50];
             tIdx       = find(t>=tmp_t2test(1) & t<=tmp_t2test(2));
@@ -536,7 +517,7 @@ for isub = 1:nSub
                         end
                     end
                     
-                case {'N2c','N2i','CPP','CPPr_csd','CPPr_amplitude', 'beta_pretarget_amplitude', 'beta_response_amplitude', 'beta_base_response_amplitude', 'pupil_lp','pupilr_lp','pupil_bp','pupilr_bp','RT_window'}
+                case {'N2c','N2i','CPP','CPPr_csd','CPPr_amplitude', 'beta_response_amplitude', 'beta_base_response_amplitude', 'pupil_lp','pupilr_lp','pupil_bp','pupilr_bp','RT_window'}
                     % get average data in time window from time series data
                     tIdx = (tt2use>=twin_bar(1) & tt2use<=twin_bar(2));
                     
@@ -641,10 +622,7 @@ for isub = 1:nSub
                         end
                     end
                 case {'CPPr_slope', 'CPPr_csd_slope'}
-                    
-
-%                     tmpbinnedData = NaN(nbin2use, sideInfo, size(data2use,1));
-                    
+                                        
                     for ibin = 1:nbin2use
                         for isideStim = 1:sideInfo
                             if sideInfo > 1
@@ -764,38 +742,6 @@ for isub = 1:nSub
                     end
                 end
             end
-        case 'ITPC_window'
-            if isub == 1
-                binnedData = NaN(nSub, nbin2use, sideInfo, size(data2use,4));
-            end
-            
-            clear tmp
-            for ibin = 1:nbin2use
-                for isideStim = 1:sideInfo
-                    if sideInfo > 1
-                        trIdx = (binning2use==ibin) & (allSideStimtr==isideStim);
-                    else
-                        trIdx = (binning2use==ibin);
-                    end
-                    
-                    tmp = squeeze(abs(nanmean(exp(1i*(data2use(:, :, trIdx, :))),3)));
-                    
-                    [~,f2plot(1)] = min(abs(f2test(1) - SPG_freq));
-                    [~,f2plot(2)] = min(abs(f2test(2) - SPG_freq));
-                    
-                    [~,t2plot(1)] = min(abs(t2test(1) - tt2use));
-                    [~,t2plot(2)] = min(abs(t2test(2) - tt2use));
-                    
-                    binnedData(isub,ibin,isideStim,:) = mean(mean(tmp(t2plot(1):t2plot(2),f2plot(1):f2plot(2),:),1),2);
-                    
-                    if ~isempty(find(isnan(binnedData(isub,ibin,isideStim,:))))
-                        keyboard
-                    end
-                end
-            end
-            
-            
-            
         otherwise
             error('data type not defined')
     end

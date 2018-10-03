@@ -51,7 +51,7 @@ allAlphaRh_preTarget=[]; allAlphaLh_preTarget=[];
 allAlpha_preTarget=[]; allAlphaAsym_preTarget=[]; allAlpha_preTarget_topo=[]; allAlphaAsym_preTarget_topo=[];
 
 % beta
-allBeta_postTarget=[]; allBeta_base_postTarget=[]; allBeta_preResponse=[]; allBeta_base_preResponse=[]; allBeta_preResponse_topo=[];
+allBeta_postTarget=[]; allBeta_base_postTarget=[]; allBeta_preResponse=[]; allBeta_base_preResponse=[]; allBeta_preResponse_topo=[]; allBeta_base_preResponse_topo=[];
 
 % SPG
 allN2c_power = []; allN2c_phase = []; allN2i_power = []; allN2i_phase = [];
@@ -143,8 +143,9 @@ for isub = single_participants
     allBeta_postTarget              = [allBeta_postTarget           DAT.beta_postTarget];
     allBeta_base_postTarget         = [allBeta_base_postTarget      DAT.beta_base_postTarget];
     allBeta_preResponse             = [allBeta_preResponse          DAT.beta_preResponse];
-    allBeta_base_preResponse        = [allBeta_base_preResponse     DAT.beta_base_preResponse];
-    allBeta_preResponse_topo        = [allBeta_preResponse_topo     DAT.beta_preResponse_topo];
+    allBeta_base_preResponse        = [allBeta_base_preResponse         DAT.beta_base_preResponse];
+    allBeta_preResponse_topo        = [allBeta_preResponse_topo         DAT.beta_preResponse_topo];
+    allBeta_base_preResponse_topo   = [allBeta_base_preResponse_topo    DAT.beta_base_preResponse_topo];
     
     allN2c_power        = cat(3,allN2c_power, DAT.SPG.N2c_power);
     allN2c_phase        = cat(3,allN2c_phase, DAT.SPG.N2c_phase);

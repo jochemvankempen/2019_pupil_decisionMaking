@@ -66,7 +66,6 @@ bin2use         = 'pupil_lp_baseline_regress_iti_side'
 # bin2use         = 'pupil_lp_RT_neg200_200_regress_bl_iti_side';
 # bin2use         = 'pupil_bp_RT_neg200_200_regress_bl_iti_side';
 # bin2use         = 'pretarget_alpha';
-# bin2use         = 'pretarget_alpha_asym';
 # bin2use         = 'N2i_amplitude_regress_iti_side'
 
 # ------------------------------------------------------------------------
@@ -242,7 +241,7 @@ write.csv(Output_mat, str_c(filedir, filename, '_R_statistics','.csv'),row.names
 probeColumns = c('CPP_onset')
 reduced_data <- data_p_level %>%
   dplyr::select( 1:3, one_of("RT"), one_of("RT_CV"), 
-          one_of("alpha"), one_of("alpha_asym"),
+          one_of("alpha"),
           one_of("N2c_latency"), one_of("N2c_amplitude"), one_of("N2i_latency"), one_of("N2i_amplitude"),
           one_of("CPP_onset"), one_of("CPP_slope2"), one_of("CPPr_amplitude"), one_of("CPP_ITPC"), 
           one_of("preRespBeta_base"), one_of("preRespBeta_slope")) 

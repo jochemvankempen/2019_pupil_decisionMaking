@@ -46,8 +46,8 @@ idx_alpha_asym  = strcmpi(allBin2use, 'pretarget_alpha_asym');
 idx_N2i         = strcmpi(allBin2use, 'N2i_amplitude_regress_iti_side');
 
 % idx2plot   = idx_BL_bp;
-% idx2plot   = idx_resp;
-idx2plot   = idx_BL_lp;
+idx2plot   = idx_resp;
+% idx2plot   = idx_BL_lp;
 
 % plot Settings
 chanlocs = readlocs('cap64.loc'); %biosemi
@@ -615,7 +615,7 @@ B.FontWeight = 'bold';
 
 %%%% ITPC band
 
-hsubplot = subtightplot(nrow, ncol, [15 16], subplotgap);
+hsubplot = subtightplot(nrow, ncol, [15 16 17 18], subplotgap);
 % hsub4 = subplot(nrow, ncol, [6]);
 figInit('ax');
 
@@ -688,119 +688,6 @@ ylim([0.1 0.5])
 xlabel('Time from motion onset (ms)','fontsize',fSet.axLabFontsize)
 ylabel({'ITPC'},'fontsize',fSet.axLabFontsize)
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% CPP slope var
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hsub = subtightplot(nrow, ncol, [17], subplotgap);
-
-% hsub4 = subplot(nrow, ncol, [6]);
-figInit('ax');
-
-% cfg.ylim.alpha = [2.1 3];
-hold on
-
-% get stats
-bin2use = allBin2use{idx2plot};
-filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-[stats, mfit] = loadStatsR(filename, 'CPP_slope_var',nSub,nbin2use);
-[pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-switch stats.model
-    case 'Linear'
-        betaString = ['\beta_{1} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(2,:);
-    case 'Quadratic'
-        betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(1,:);
-    otherwise
-        betaString = [];
-end
-if ~isempty(mfit)
-    % plot model fit
-    h = plot(1:5, mfit.mean, 'linewidth', fSet.plLineWidth_in, 'color', model_color);
-    h = patch([1:5 flip(1:5)], [mfit.mean flip(mfit.mean)] + [-mfit.se flip(mfit.se)], h.Color);
-    h.FaceAlpha = 0.3;
-    h.EdgeAlpha = 0.3;
-    h.EdgeColor = [h.FaceColor];
-end
-
-for ibin = 1:nbin2use
-    plot([x(ibin) x(ibin)],...
-        [mean(CPPr_csd_slope_var{idx2plot}(:,ibin))-std(CPPr_csd_slope_var{idx2plot}(:,ibin))/sqrt(nSub) mean(CPPr_csd_slope_var{idx2plot}(:,ibin))+std(CPPr_csd_slope_var{idx2plot}(:,ibin))/sqrt(nSub) ],...
-        'linewidth',fSet.plLineWidth_in,'color','k');
-    
-    plot(x(ibin), mean(CPPr_csd_slope_var{idx2plot}(:,ibin)),plotMarker{ibin}, ...
-        'color', fSet.colors(ibin,:),'markersize', fSet.MarkerSize,...
-        'MarkerFaceColor', fSet.colors(ibin,:),'MarkerEdgeColor','k')
-end
-
-text(3.3, min(mean(CPPr_csd_slope_var{idx2plot}))*0.65, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
-
-
-% ylim([cfg.ylim.alpha])
-h = ylabel('CPP build-up rate variability','fontsize',fSet.axLabFontsize);
-% xlim([0.5 5.5])
-xlim([0 nbin2use+1])
-
-set(gca,'xtick',x)
-xlabel('Pupil Bin','fontsize',fSet.axLabFontsize);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% CPP amplitude var
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hsub = subtightplot(nrow, ncol, [18], subplotgap);
-
-% hsub4 = subplot(nrow, ncol, [6]);
-figInit('ax');
-
-% cfg.ylim.alpha = [2.1 3];
-hold on
-
-% get stats
-bin2use = allBin2use{idx2plot};
-filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-[stats, mfit] = loadStatsR(filename, 'CPPr_amplitude_var',nSub,nbin2use);
-[pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-switch stats.model
-    case 'Linear'
-        betaString = ['\beta_{1} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(2,:);
-    case 'Quadratic'
-        betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(1,:);
-    otherwise
-        betaString = [];
-end
-if ~isempty(mfit)
-    % plot model fit
-    h = plot(1:5, mfit.mean, 'linewidth', fSet.plLineWidth_in, 'color', model_color);
-    h = patch([1:5 flip(1:5)], [mfit.mean flip(mfit.mean)] + [-mfit.se flip(mfit.se)], h.Color);
-    h.FaceAlpha = 0.3;
-    h.EdgeAlpha = 0.3;
-    h.EdgeColor = [h.FaceColor];
-end
-
-for ibin = 1:nbin2use
-    plot([x(ibin) x(ibin)],...
-        [mean(CPPr_amplitude_var{idx2plot}(:,ibin))-std(CPPr_amplitude_var{idx2plot}(:,ibin))/sqrt(nSub) mean(CPPr_amplitude_var{idx2plot}(:,ibin))+std(CPPr_amplitude_var{idx2plot}(:,ibin))/sqrt(nSub) ],...
-        'linewidth',fSet.plLineWidth_in,'color','k');
-    
-    plot(x(ibin), mean(CPPr_amplitude_var{idx2plot}(:,ibin)),plotMarker{ibin}, ...
-        'color', fSet.colors(ibin,:),'markersize', fSet.MarkerSize,...
-        'MarkerFaceColor', fSet.colors(ibin,:),'MarkerEdgeColor','k')
-end
-
-text(3.3, min(mean(CPPr_amplitude_var{idx2plot}))*0.65, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
-
-
-% ylim([cfg.ylim.alpha])
-h = ylabel('CPP amplitude variability','fontsize',fSet.axLabFontsize);
-% xlim([0.5 5.5])
-xlim([0 nbin2use+1])
-
-set(gca,'xtick',x)
-xlabel('Pupil Bin','fontsize',fSet.axLabFontsize);
 
 set(gcf,'renderer','painters')
 
@@ -1515,7 +1402,7 @@ for ifiletype = 1:length(figureFileType)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Supplementary figure N2 ITPC/Power
+%% Supplementary figure N2 ITPC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [fH, fSet] = figInit('fig', 3, {'height', 2.5/5; 'width',6/5});
@@ -1524,29 +1411,18 @@ nrow = 2;
 ncol = 8;
 subplotgap = [0.09 0.09];
 
-
-data2plot = 'Power';
-% data2plot = 'ITPC';
-
 %%%% ITPC
 %%% imagesc plot
 plotOrder = [1 2; 9 10];
-for iplot = 1 % N2c and N2i
+for iplot = 1:2 % N2c and N2i
     
     switch iplot
         case 1
             %%% N2c
-            switch data2plot
-                case 'ITPC'
-                    N2_2use = N2c_ITPC;
-                    N2_2use_band = N2c_ITPC_band;
-                    N2_2use_bar = N2c_ITPC_bar;
-                case 'Power'
-                    N2_2use = N2c_power;
-                    N2_2use_band = N2c_power_band;
-                    N2_2use_bar = N2c_power_bar;
-                    
-            end
+            N2_2use = N2c_ITPC;
+            N2_2use_band = N2c_ITPC_band;
+            N2_2use_bar = N2c_ITPC_bar;
+            
             t2test      = [200 400];
         case 2
             %%% N2i
@@ -1605,7 +1481,7 @@ plotOrder = [...
     14 15 16;    
     ];
     
-for iplot = 3 %N2c/Nci, baseline and pupil response
+for iplot = 1:4 %N2c/Nci, baseline and pupil response
     
     switch iplot
         case 1
@@ -1626,18 +1502,10 @@ for iplot = 3 %N2c/Nci, baseline and pupil response
             t2test      = [250 450];
         case 3
             %%% N2c, pupil baseline
-            switch data2plot
-                case 'ITPC'
-                    N2_2use = N2c_ITPC;
-                    N2_2use_band = N2c_ITPC_band;
-                    N2_2use_bar = N2c_ITPC_bar;
-                case 'Power'
-                    N2_2use = N2c_power;
-                    N2_2use_band = N2c_power_band;
-                    N2_2use_bar = N2c_power_bar;
-                    
-            end
-
+            N2_2use = N2c_ITPC;
+            N2_2use_band = N2c_ITPC_band;
+            N2_2use_bar = N2c_ITPC_bar;
+            
             stats_label = 'N2c_ITPC';
             pupilIdx = idx_BL_lp;
             t2test      = [200 400];
@@ -1778,7 +1646,7 @@ end
 [fH, fSet] = figInit('fig', 4, {'height', 3.5/5; 'width',6/5});
 
 nrow = 3;
-ncol = 5;
+ncol = 4;
 subplotgap = [0.1 0.065];
 subplotgap2 = [0.1 0.065];
 
@@ -1833,8 +1701,8 @@ for ibin = 1:nbin2use
     h(ibin) = boundedline(cfg.t, squeeze(mean(N2_2plot(:,ibin, :),1)), squeeze(std(N2_2plot(:,ibin, :),[],1))/sqrt(nSub),'cmap',fSet.colors(ibin,:),'transparency', 0.2,'alpha');
     set(h(ibin),'linewidth',fSet.plLineWidth)
 end
-h = plotBrokenVector(trange, -1.5, signbin);
-h.LineWidth = 3;
+h2 = plotBrokenVector(trange, -1.5, signbin);
+h2.LineWidth = 3;
 
 xlim(n2_xlim)
 ylim(n2_ylim)
@@ -1897,101 +1765,126 @@ set(gca,'xtick',1:nbin2use)
 xlabel('N2i amplitude bin','fontsize',fSet.axLabFontsize)
 ylabel('Pupil response','fontsize',fSet.axLabFontsize)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% development of RT across trials
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% alpha_asym
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hsub = subtightplot(nrow, ncol, [4], subplotgap);
+data2plot = RT_window;
+% data2plot = RTcv_window;
 
-% hsub4 = subplot(nrow, ncol, [6]);
+data_min1   = {squeeze(data2plot{idx2plot}(:,:,:,5))};
+data_0      = {squeeze(data2plot{idx2plot}(:,:,:,6))};
+data_plus1  = {squeeze(data2plot{idx2plot}(:,:,:,7))};
+
+subplotgap = [0.1 0.058];
+
+allx = -5:5;
+x2plot = -5:2;
+x2plotIdx = ismember(allx, x2plot);
+hsub = subtightplot(nrow, ncol, [9 10 ], subplotgap);
 figInit('ax');
 
-% cfg.ylim.alpha = [2.1 3];
+cfg.xlim     = [-5 2.5];
+cfg.ylim     = [-0.2 0.2];
+
 hold on
 
-% get stats
-bin2use = allBin2use{idx2plot};
-filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-[stats, mfit] = loadStatsR(filename, 'alpha_asym',nSub,nbin2use);
-[pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-switch stats.model
-    case 'Linear'
-        betaString = ['\beta_{1} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(2,:);
-    case 'Quadratic'
-        betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-        model_color = fSet.colors(1,:);
-    otherwise
-        betaString = [];
-end
-if ~isempty(mfit)
-    % plot model fit
-    h = plot(1:5, mfit.mean, 'linewidth', fSet.plLineWidth_in, 'color', model_color);
-    h = patch([1:5 flip(1:5)], [mfit.mean flip(mfit.mean)] + [-mfit.se flip(mfit.se)], h.Color);
-    h.FaceAlpha = 0.3;
-    h.EdgeAlpha = 0.3;
-    h.EdgeColor = [h.FaceColor];
-end
-
 for ibin = 1:nbin2use
-    plot([x(ibin) x(ibin)],...
-        [mean(alpha_asym{idx2plot}(:,ibin))-std(alpha_asym{idx2plot}(:,ibin))/sqrt(nSub) mean(alpha_asym{idx2plot}(:,ibin))+std(alpha_asym{idx2plot}(:,ibin))/sqrt(nSub) ],...
-        'linewidth',fSet.plLineWidth_in,'color','k');
+    A = boundedline(x2plot,squeeze(mean(data2plot{idx2plot}(:,ibin,:,x2plotIdx),1)),squeeze(std(data2plot{idx2plot}(:,ibin,:,x2plotIdx),[],1))/sqrt(nSub),'cmap',fSet.colors(ibin,:),'alpha');
+    set(A,'linewidth',fSet.plLineWidth_in)
+end
+xlim(cfg.xlim)
+ylim(cfg.ylim)
+set(gca,'xtick',-5:3)
+xlabel('Trial relative to pupil response','fontsize',fSet.axLabFontsize);
+ylabel('RT (Z-score)','fontsize',fSet.axLabFontsize);
+
+clear P
+bins2compare = [1 2 3 4];
+RT2compare = [];
+for itrial = 1:length(find(x2plotIdx))
+    RT2compare = [mean(data2plot{idx2plot}(:,bins2compare,:,itrial),2), data2plot{idx2plot}(:,[5],:,itrial)];
     
-    plot(x(ibin), mean(alpha_asym{idx2plot}(:,ibin)),plotMarker{ibin}, ...
-        'color', fSet.colors(ibin,:),'markersize', fSet.MarkerSize,...
-        'MarkerFaceColor', fSet.colors(ibin,:),'MarkerEdgeColor','k')
+    [H,P(itrial,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
 end
 
-text(3.3, min(mean(alpha_asym{idx2plot}))*0.65, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
+if 1
+    [pt,p_masked] = fdr(P,0.05);
+else
+    pt = 0.05;
+end
+P(~p_masked) = 1;
+[pstring_chi,starstring] = getSignificanceStrings(P, 0, 1);
 
-
-% ylim([cfg.ylim.alpha])
-h = ylabel('\alpha Power Asymmetry','fontsize',fSet.axLabFontsize);
-% xlim([0.5 5.5])
-xlim([0 nbin2use+1])
-
-set(gca,'xtick',x)
-xlabel('Pupil Bin','fontsize',fSet.axLabFontsize);
-
+YLIM = get(gca,'ylim');
+for iP = 1:length(P)
+    text(x2plot(iP), YLIM(2)*0.95, starstring{iP},'fontsize',fSet.axLabFontsize,'HorizontalAlignment','center')
+end
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% alpha asym, pupil response
+%%% RT across trials, barplot
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+hsub = subtightplot(nrow, ncol, [11 12 ], subplotgap);
 
-hsub = subtightplot(nrow, ncol, [5], subplotgap);
 figInit('ax');
 hold on
 
-tmpPupil = mean(pupil_lp_RT_neg200_200{idx_alpha_asym});
-
-% get stats
-bin2use = allBin2use{idx_alpha_asym};
-filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-[stats, mfit] = loadStatsR(filename, 'plevelPupil_RT200',nSub,nbin2use);
-[pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-text(3, min(tmpPupil)*0.8, {pstring_chi}, 'fontsize',fSet.plFontsize)
-
+RT2compare = [];
+x2plot = 1:3:nbin2use*3;
+clear P
 for ibin = 1:nbin2use
-    % se
-    tmpPupil_std = squeeze(std(pupil_lp_RT_neg200_200{idx_alpha_asym}(:,ibin)))/sqrt(nSub);
-    plot( [(ibin) (ibin)],[tmpPupil(ibin)-tmpPupil_std tmpPupil(ibin)+tmpPupil_std],'linewidth',fSet.plLineWidth_in,'color','k');
-    % plotMarker
-    h2(ibin) = plot((ibin), tmpPupil(ibin), plotMarker{ibin},'markersize',fSet.MarkerSize, 'color',fSet.colors(ibin,:),'MarkerFaceColor',fSet.colors(ibin,:),'MarkerEdgeColor','k','LineWidth',1);
-    LEGEND{ibin} = ['Bin ' num2str(ibin) ];
+    RT2compare = [data_min1{1}(:,ibin), data_0{1}(:,ibin), data_plus1{1}(:,ibin)];
+    
+    [H,P(ibin,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
+    [H,P(ibin,2),CI,STATS] = ttest(RT2compare(:,2), RT2compare(:,3));
+    
+    h = bar([x2plot(ibin):x2plot(ibin)+2], mean(RT2compare));
+    h.FaceColor = fSet.colors(ibin,:);
+    
+    plot([x2plot(ibin) x2plot(ibin)], mean(RT2compare(:,1)) + [-std(RT2compare(:,1))/sqrt(nSub) std(RT2compare(:,1))/sqrt(nSub)],'linewidth',1,'color','k')
+    plot([x2plot(ibin)+1 x2plot(ibin)+1], mean(RT2compare(:,2)) + [-std(RT2compare(:,2))/sqrt(nSub) std(RT2compare(:,2))/sqrt(nSub)],'linewidth',1,'color','k')
+    plot([x2plot(ibin)+2 x2plot(ibin)+2], mean(RT2compare(:,3)) + [-std(RT2compare(:,3))/sqrt(nSub) std(RT2compare(:,3))/sqrt(nSub)],'linewidth',1,'color','k')   
 end
-xlim([0 6])
-ylim([min(tmpPupil)*0.75 max(tmpPupil)*1.15])
 
-set(gca,'xtick',1:nbin2use)
-xlabel('\alpha asymmetry bin','fontsize',fSet.axLabFontsize)
-ylabel('Pupil response','fontsize',fSet.axLabFontsize)
+if 1
+    [pt,p_masked] = fdr(P,0.05);
+else
+    pt = 0.05;
+end
+P(~p_masked) = 1;
+
+clear groups
+for ibin = 1:nbin2use
+    
+    for iC = 1:2
+        if p_masked(ibin,iC)
+            groups{ibin,iC} = [x2plot(ibin) x2plot(ibin)+1] + (iC-1);
+        end
+    end
+    
+end
+groups = groups(p_masked);
+sigstar(groups(:), P(p_masked))
+
+set(gca,'xtick',1:15)
+xTicks = get(gca, 'xtick');
+
+% set some extra markers to indicate trial index
+YLIM = ylim;
+text(14,YLIM(1)*0.6, {'Trial index'},'horizontalalignment','center')
+text(13,YLIM(1)*0.8, {'-1'},'horizontalalignment','center')
+text(14,YLIM(1)*0.8, {'0'},'horizontalalignment','center')
+text(15,YLIM(1)*0.8, {'1'},'horizontalalignment','center')
+A = get(gca);
+plot([13 13],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
+plot([14 14],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
+plot([15 15],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
+
+set(gca,'xtick',[2:3:nbin2use*3],'xticklabel',1:nbin2use)
+xlabel('Pupil bin','fontsize',fSet.axLabFontsize);
 
 
-
-
-
-
-saveFigName = [bin2use '_' bintype fileExt '_control'];
+saveFigName = [bin2use '_' bintype fileExt '_fig4_control'];
 for ifiletype = 1:length(figureFileType)
     switch figureFileType{ifiletype}
         case 'eps'
@@ -2000,13 +1893,6 @@ for ifiletype = 1:length(figureFileType)
             print(gcf,['-d' figureFileType{ifiletype} ],[paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.' figureFileType{ifiletype}])
     end
 end
-
-
-
-
-
-
-
 
 
 %% Figure 1, copy for CD dataset.
@@ -2201,173 +2087,9 @@ for ifiletype = 1:length(figureFileType)
     end
 end
 
-%% fig 5
-%%%%% development of RT across trials
-
-data2plot = RT_window;
-% data2plot = RTcv_window;
-% 
-% data2plot = CPPr_amplitude_window;
-% data2plot = CPPr_csd_slope_window;
-% data2plot = CPP_ITPC_window;
-
-
-data_min1   = {squeeze(data2plot{idx2plot}(:,:,:,5))};
-data_0      = {squeeze(data2plot{idx2plot}(:,:,:,6))};
-data_plus1  = {squeeze(data2plot{idx2plot}(:,:,:,7))};
-
-[fH, fSet] = figInit('fig', 3, {'height', 3.5/5; 'width',6/5});
-
-nrow = 3;
-ncol = 4;
-subplotgap = [0.1 0.058];
-
-allx = -5:5;
-x2plot = -5:2;
-x2plotIdx = ismember(allx, x2plot);
-hsub = subtightplot(nrow, ncol, [9 10 ], subplotgap);
-figInit('ax');
-
-cfg.xlim     = [-5 2.5];
-cfg.ylim     = [-0.2 0.2];
-
-hold on
-
-for ibin = 1:nbin2use
-    A = boundedline(x2plot,squeeze(mean(data2plot{idx2plot}(:,ibin,:,x2plotIdx),1)),squeeze(std(data2plot{idx2plot}(:,ibin,:,x2plotIdx),[],1))/sqrt(nSub),'cmap',fSet.colors(ibin,:),'alpha');
-    set(A,'linewidth',fSet.plLineWidth_in)
-end
-% plot([0 0], cfg.ylim ,'k','linewidth',1)
-% plot(x2plot(signRTbin), cfg.ylim(1)*0.9, 'k*','markersize',10)
-% sigstar(num2cell(find(signRTbin)), pRTbin(signRTbin))
-xlim(cfg.xlim)
-% ylim(cfg.ylim)
-set(gca,'xtick',-5:3)
-xlabel('Trial relative to pupil response','fontsize',fSet.axLabFontsize);
-ylabel('RT (Z-score)','fontsize',fSet.axLabFontsize);
-
-
-
-RT2compare = [];
-clear P
-bins2compare = [1 2 3 4];
-% bins2compare = [3];
-
-for itrial = 1:length(find(x2plotIdx))
-    RT2compare = [mean(data2plot{idx2plot}(:,bins2compare,:,itrial),2), data2plot{idx2plot}(:,[5],:,itrial)];
-    
-    [H,P(itrial,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
-end
-
-if 1
-    [pt,p_masked] = fdr(P,0.05);
-else
-    pt = 0.05;
-end
-% pt = 0.05/numel(P) ;
-% signRTbin(P<pt) = true;
-P(~p_masked) = 1;
-[pstring_chi,starstring] = getSignificanceStrings(P, 0, 1);
-
-YLIM = get(gca,'ylim');
-for iP = 1:length(P)
-    text(x2plot(iP), YLIM(2)*0.95, starstring{iP},'fontsize',fSet.axLabFontsize,'HorizontalAlignment','center')
-end
-%
-% axes('position',[0.55 0.6 0.4 0.4]) ; % inset
-hsub = subtightplot(nrow, ncol, [11 12 ], subplotgap);
-
-figInit('ax');
-% set(gca,'XColor',[0.4 0.4 0.4],'YColor',[0.4 0.4 0.4])
-hold on
-
-% bin2use = allBin2use{idx2plot};
-% filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-% [stats, mfit] = loadStatsR(filename, 'RT_0',nSub,nbin2use);
-% [pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-% betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-
-RT2compare = [];
-x2plot = 1:3:nbin2use*3;
-clear P
-for ibin = 1:nbin2use
-    RT2compare = [data_min1{1}(:,ibin), data_0{1}(:,ibin), data_plus1{1}(:,ibin)];
-    
-    [H,P(ibin,1),CI,STATS] = ttest(RT2compare(:,1), RT2compare(:,2));
-    [H,P(ibin,2),CI,STATS] = ttest(RT2compare(:,2), RT2compare(:,3));
-    %     [H,P(ibin,3),CI,STATS] = ttest(RT2compare(:,3), RT2compare(:,4));
-    
-    
-    h = bar([x2plot(ibin):x2plot(ibin)+2], mean(RT2compare));
-    h.FaceColor = fSet.colors(ibin,:);
-    
-    plot([x2plot(ibin) x2plot(ibin)], mean(RT2compare(:,1)) + [-std(RT2compare(:,1))/sqrt(nSub) std(RT2compare(:,1))/sqrt(nSub)],'linewidth',1,'color','k')
-    plot([x2plot(ibin)+1 x2plot(ibin)+1], mean(RT2compare(:,2)) + [-std(RT2compare(:,2))/sqrt(nSub) std(RT2compare(:,2))/sqrt(nSub)],'linewidth',1,'color','k')
-    plot([x2plot(ibin)+2 x2plot(ibin)+2], mean(RT2compare(:,3)) + [-std(RT2compare(:,3))/sqrt(nSub) std(RT2compare(:,3))/sqrt(nSub)],'linewidth',1,'color','k')
-    %     plot([x2plot(ibin)+3 x2plot(ibin)+3], mean(RT2compare(:,4)) + [-std(RT2compare(:,4))/sqrt(nSub) std(RT2compare(:,4))/sqrt(nSub)],'linewidth',1,'color','k')
-    
-end
-
-signRTbin = false(nbin2use,2);
-% pt = FDR(P,0.05);
-pt = 0.05/numel(P) ;
-signRTbin(P<pt) = true;
-% signRTbin = find(signRTbin);
-clear groups
-for ibin = 1:nbin2use
-    
-    for iC = 1:2
-        if signRTbin(ibin,iC)
-            groups{ibin,iC} = [x2plot(ibin) x2plot(ibin)+1] + (iC-1);
-        end
-    end
-    
-end
-groups = groups(signRTbin);
-sigstar(groups(:), P(signRTbin))
-
-% P = P(:);
-
-
-set(gca,'xtick',1:15)
-xTicks = get(gca, 'xtick');
-
-
-
-YLIM = ylim;
-text(14,YLIM(1)*0.6, {'Trial index'},'horizontalalignment','center')
-text(13,YLIM(1)*0.8, {'-1'},'horizontalalignment','center')
-text(14,YLIM(1)*0.8, {'0'},'horizontalalignment','center')
-text(15,YLIM(1)*0.8, {'1'},'horizontalalignment','center')
-A = get(gca);
-plot([13 13],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-plot([14 14],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-plot([15 15],[YLIM(1) YLIM(1)+A.TickLength(1)],'k','linewidth',2)
-% get(gca,'
-% xtickloc =
-
-set(gca,'xtick',[2:3:nbin2use*3],'xticklabel',1:nbin2use)
-xlabel('Pupil bin','fontsize',fSet.axLabFontsize);
-% xlim([0 16])
-
-% axis square
-
-
-saveFigName = [bin2use '_' bintype fileExt '_RT_acrossTrials'];
-
-for ifiletype = 1:length(figureFileType)
-    switch figureFileType{ifiletype}
-        case 'eps'
-            %             print(gcf,['-d' figureFileType{ifiletype} 'c'],[paths.pop 'fig' filesep 'p_level' filesep saveFigName '.' figureFileType{ifiletype}])
-            saveas(gcf, [paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.svg'], 'svg');
-            
-        otherwise
-            print(gcf,['-d' figureFileType{ifiletype} ],[paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.' figureFileType{ifiletype}])
-    end
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% reduced - CPP
+%% reduced - CPP (fig5)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [fH, fSet] = figInit('fig', 5, {'height', 2.5/5; 'width',6/5});
@@ -2638,8 +2360,7 @@ subplotgap2 = [0.12 0.07];
 
 subplotorder = [...
     1 2;...
-    3 4;...
-    5 9;...
+    3 7;...
     10 12;...
     13 14;...
     15 16;...
@@ -2696,72 +2417,17 @@ set(gca,'xtick',1:nbin2use)
 xlabel('Pupil bin', 'fontsize',fSet.axLabFontsize)
 ylabel('\alpha power', 'fontsize',fSet.axLabFontsize)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% alpha - asym
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% hsub = subtightplot(nrow, ncol, [subplotorder(2,1):subplotorder(2,2)], subplotgap2);
-% figInit('ax');
-% 
-% hold on
-% 
-% % get stats
-% bin2use = allBin2use{idx2plot};
-% filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-% [stats, mfit] = loadStatsR(filename, 'alpha_asym',nSub,nbin2use);
-% [pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
-% switch stats.model
-%     case 'Linear'
-%         betaString = ['\beta_{1} = ' num2str(stats.B, '%1.2f')];
-%         model_color = fSet.colors(2,:);
-%     case 'Quadratic'
-%         betaString = ['\beta_{2} = ' num2str(stats.B, '%1.2f')];
-%         model_color = fSet.colors(1,:);
-%     otherwise
-%         betaString = [];
-% end
-% if ~isempty(mfit)
-%     % plot model fit
-%     h = plot(1:nbin2use, mfit.mean, 'linewidth', fSet.plLineWidth_in, 'color', model_color);
-%     h = patch([1:nbin2use flip(1:nbin2use)], [mfit.mean flip(mfit.mean)] + [-mfit.se flip(mfit.se)], h.Color);
-%     h.FaceAlpha = 0.3;
-%     h.EdgeAlpha = 0.3;
-%     h.EdgeColor = [h.FaceColor];
-% end
-% tmpmean = squeeze(mean(alpha_asym{idx2plot}));
-% for ibin = 1:nbin2use
-%     %     slope
-%     tmpstd = squeeze(std(alpha_asym{idx2plot}(:,ibin, :, :)))/sqrt(nSub);
-%     plot( [(ibin) (ibin)],[tmpmean(ibin)-tmpstd tmpmean(ibin)+tmpstd],'linewidth',fSet.plLineWidth_in,'color','k');
-%     
-%     h2(ibin) = plot((ibin), tmpmean(ibin), plotMarker{ibin},'markersize',fSet.MarkerSize,'color',fSet.colors(ibin,:),'MarkerFaceColor',fSet.colors(ibin,:),'MarkerEdgeColor','k');
-%     LEGEND{ibin} = ['Bin ' num2str(ibin) ];
-% end
-% xlim([0 6])
-% ylim([min(tmpmean) max(tmpmean)] .* [0.1 1.4])
-% 
-% text(1.5, min(tmpmean) * 0.4, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
-% 
-% set(gca,'xtick',1:nbin2use)
-% xlabel('Pupil bin', 'fontsize',fSet.axLabFontsize)
-% ylabel('\alpha power asymmetry', 'fontsize',fSet.axLabFontsize)
-% 
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Beta
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-hsub1 = subtightplot(nrow, ncol, [subplotorder(3,1):subplotorder(3,2)], subplotgap2);
+hsub1 = subtightplot(nrow, ncol, [subplotorder(2,1):subplotorder(2,2)], subplotgap2);
 figInit('ax');
 
-% hsub4 = subplot(nrow, ncol, [6]);
-figInit('ax');
-
-cfg.xlim.beta = [-530 80];
-cfg.ylim.beta = [0.52 0.76];
-cfg.ylim.beta = [-0.2 0.01];
+cfg.xlim = [-530 80];
+cfg.ylim = [0.52 0.76];
+cfg.ylim = [-0.2 0.01];
 
 
 x_beta = [-440:30:-320];
@@ -2782,15 +2448,14 @@ for ibin = 1:nbin2use
 end
 %
 % plot(x_beta, tmpBeta,'linewidth',4,'color',[0.5 0.5 0.5 0.5])
-plot([0 0], [cfg.ylim.beta] ,'k','linewidth',1)
+plot([0 0], [cfg.ylim] ,'k','linewidth',1)
 
 twin_bar    = [-130 -70];
 t2test_slope= [-300 0];
 
-plot([twin_bar(1) twin_bar(2)], cfg.ylim.beta(2) - [0.017 0.017], 'k', 'linewidth', 4)
-plot([t2test_slope(1) t2test_slope(2)], cfg.ylim.beta(2) - [0.009 0.009], 'color',[0.5 0.5 0.5], 'linewidth', 4)
+plot([twin_bar(1) twin_bar(2)], cfg.ylim(2) - [0.017 0.017], 'k', 'linewidth', 4)
+plot([t2test_slope(1) t2test_slope(2)], cfg.ylim(2) - [0.009 0.009], 'color',[0.5 0.5 0.5], 'linewidth', 4)
 
-% yBox = [min(tmpBeta)-min(tmpBeta)*0.045 max(tmpBeta)+min(tmpBeta)*0.045];
 yBox = [min(tmpBeta)+min(tmpBeta)*0.13 max(tmpBeta)-min(tmpBeta)*0.13];
 xBox = [min(x_beta)+min(x_beta)*0.045 max(x_beta)-min(x_beta)*0.045];
 
@@ -2801,7 +2466,6 @@ h.LineStyle = '--';
 % get stats
 bin2use = allBin2use{idx2plot};
 filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
-% [stats, mfit] = loadStatsR(filename, 'preRespBeta',nSub,nbin2use);
 [stats, mfit] = loadStatsR(filename, 'preRespBeta_base',nSub,nbin2use);
 [pstring_chi,starstring] = getSignificanceStrings(stats.p, 0, 1, '\it p ');
 switch stats.model
@@ -2838,22 +2502,20 @@ for ibin = 1:nbin2use
 end
 
 
-xlim([cfg.xlim.beta])
-ylim([cfg.ylim.beta])
+xlim([cfg.xlim])
+ylim([cfg.ylim])
 set(gca,'fontsize',fSet.plFontsize,'ydir','reverse')
 xlabel('Time from response (ms)','fontsize',fSet.axLabFontsize)
 ylabel({'Power (dB)'},'fontsize',fSet.axLabFontsize)
 % ydir('reverse')
 
-% text(xBox(2)*0.99, yBox(1)*1.02, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
 text(xBox(1)*0.99, yBox(2)*0.7, {betaString, pstring_chi}, 'fontsize',fSet.plFontsize)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% beta slope
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% ax2 = axes('position',[0.61 0.88 0.14 0.07]) ; % inset
-ax2 = axes('position',[0.57 0.83 0.14 0.09]) ; % inset
+ax2 = axes('position',[0.37 0.83 0.14 0.09]) ; % inset
 figInit('ax',[],{'fontsize',10});
 set(gca,'XColor',[0.4 0.4 0.4],'YColor',[0.4 0.4 0.4])
 hold on
@@ -2911,7 +2573,7 @@ ylabel('LHB Slope', 'fontsize',fSet.axLabFontsize)
 %%% N2, timecourse and latency
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-hsub = subtightplot(nrow, ncol, [subplotorder(4,1):subplotorder(4,2)], subplotgap2);
+hsub = subtightplot(nrow, ncol, [subplotorder(3,1):subplotorder(3,2)], subplotgap2);
 figInit('ax');
 hold on
 
@@ -3040,7 +2702,6 @@ end
 
 xlim([-20 350])
 ylim([-3.2 0.5])
-% ylim([-20 3])%CSD
 
 xlabel('Time from motion onset (ms)','fontsize',fSet.axLabFontsize);
 ylabel({'Amplitude (\muV)'},'fontsize',fSet.axLabFontsize);
@@ -3050,7 +2711,7 @@ ylabel({'Amplitude (\muV)'},'fontsize',fSet.axLabFontsize);
 %%% ITPC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-hsub = subtightplot(nrow, ncol, [subplotorder(5,1):subplotorder(5,2)], subplotgap2 + [0 0.02]);
+hsub = subtightplot(nrow, ncol, [subplotorder(4,1):subplotorder(4,2)], subplotgap2 + [0 0.02]);
 figInit('ax');
 
 hold on
@@ -3107,7 +2768,6 @@ end
 xlim([0 6])
 YLIM = get(gca,'ylim');
 ylim([YLIM .* [0.9 1.1]]);
-% ylim([min(tmpmean) max(tmpmean)] .* [0.8 1.2])
 
 set(gca,'xtick',1:nbin2use)
 xlabel('Pupil bin', 'fontsize',fSet.axLabFontsize)
@@ -3135,8 +2795,6 @@ ncol = 9;
 subplotgap = [0.12 0.058];
 subplotgap2 = [0.12 0.07];
 
-% hsub4 = subtightplot(nrow, ncol, [9 10 ], subplotgap2);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Pupil
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3149,8 +2807,6 @@ cfg.ylim.Pupil      = [-0.07 0.07];
 
 hold on
 
-
-
 xlim(cfg.xlim.Pupil)
 ylim(cfg.ylim.Pupil)
 for ibin = 1:nbin2use
@@ -3162,9 +2818,6 @@ plot([0 0], ylim ,'k','linewidth',1)
 
 xlabel('Time from motion onset (ms)','fontsize',fSet.axLabFontsize);
 ylabel('Normalized pupil diameter','fontsize',fSet.axLabFontsize);
-% axis square
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% RT
@@ -3175,18 +2828,9 @@ figInit('ax');
 hold on
 RT = RT;
 
-% idx2plot    = [find(idx_BL_bp) find(idx2plot)];
-% idx2plot    = [find(idx2plot)];
-% % idx2plot    = [find(idx_BL_lp) find(idx_BL_bp)];
-% idx2plot = idx2plot2;
-
 cfg.ylim.RT     = [1000 1200];
 cfg.ylim.RT_CV  = [0.175 0.32];
 cfg.ylabel.RT   = 'RT (ms)';
-
-% [stats2report, meanFit, CIFit, SEFit, STATS] = fitlme_pupil_singleVar(MAT, 'RT', 0);
-% [pstring_chi,starstring] = getSignificanceStrings(stats2report(3), 0, 1, '\it p ');
-% betaString = ['\beta_{2} = ' num2str(STATS.Estimate, '%1.3f')];
 
 bin2use = allBin2use{idx2plot};
 filename = [paths.pop 'participant_level_side(' num2str(sideInfo) ')_bin(' num2str(nbin2use) ')_' bin2use '_' bintype fileExt analyse_CDT_fileExt  ];
@@ -3408,30 +3052,6 @@ set(gca,'color','none')
 
 export_fig([paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.png'],'-transparent')
 
-
-%alpha asym
-figure(6), clf
-set(gcf,'color','none')
-set(gca,'color','none')
-set(gca,'linewidth',2)
-set(gcf,'position',[-1420 154 1092 981])
-set(gcf,'PaperPositionMode','auto')
-
-maplimits = [min(min(squeeze(mean(mean(alpha_asym_topo{idx2plot},1),2)))) max(max(squeeze(mean(mean(alpha_asym_topo{idx2plot},1),2))))];
-topoplot(squeeze(mean(mean(alpha_asym_topo{idx2plot},1),2)),chanlocs,'maplimits',maplimits,'electrodes','off','plotchans',plot_chans,'numcontour',0);
-saveFigName = [bin2use '_' bintype fileExt '_Alpha_asym_topo'];
-A = get(gca);
-A.Children(1).LineWidth = 4;
-A.Children(2).LineWidth = 4;
-A.Children(3).LineWidth = 4;
-A.Children(4).LineWidth = 4;
-axis xy
-% set(gcf,'color','none')
-set(gca,'color','none')
-
-export_fig([paths.pop 'fig' filesep 'manuscript' filesep saveFigName '.png'],'-transparent')
-
-
 %beta
 figure(6), clf
 set(gcf,'color','none')
@@ -3440,8 +3060,8 @@ set(gca,'linewidth',2)
 set(gcf,'position',[-1420 154 1092 981])
 set(gcf,'PaperPositionMode','auto')
 
-maplimits = [min(min(squeeze(mean(mean(beta_pre_response_topo{idx2plot},1),2)))) max(max(squeeze(mean(mean(beta_pre_response_topo{idx2plot},1),2))))];
-topoplot(squeeze(mean(mean(beta_pre_response_topo{idx2plot},1),2)),chanlocs,'maplimits',maplimits,'electrodes','off','plotchans',plot_chans,'numcontour',0);
+maplimits = [min(min(squeeze(mean(mean(beta_base_pre_response_topo{idx2plot},1),2)))) max(max(squeeze(mean(mean(beta_base_pre_response_topo{idx2plot},1),2))))];
+topoplot(squeeze(mean(mean(beta_base_pre_response_topo{idx2plot},1),2)),chanlocs,'maplimits',maplimits,'electrodes','off','plotchans',plot_chans,'numcontour',0);
 
 saveFigName = [bin2use '_' bintype fileExt '_Beta_topo'];
 A = get(gca);
