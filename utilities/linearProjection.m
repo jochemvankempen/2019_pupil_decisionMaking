@@ -29,7 +29,7 @@ end
 
 %%% compute average vector and the norm to base the projection on
 averageVector   = mean(erp,2); %column vector, average across trials
-normVector      = averageVector/sqrt(averageVector'*averageVector)^2;% norm of the average vector
+normVector      = averageVector/norm(averageVector)^2;% norm of the average vector
     
 lp = zeros(nTrial,1);
 %%% Calculate linear projection
