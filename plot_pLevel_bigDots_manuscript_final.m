@@ -39,6 +39,7 @@ idx_BL_bp       = strcmpi(allBin2use, 'pupil_bp_baseline_regress_iti_side');
 idx_BL_lp       = strcmpi(allBin2use, 'pupil_lp_baseline_regress_iti_side');
 idx_resp        = strcmpi(allBin2use, 'pupil_lp_RT_neg200_200_regress_bl_iti_side');
 % idx_resp        = strcmpi(allBin2use, 'pupil_bp_RT_neg200_200_regress_bl_iti_side');
+idx_resp        = strcmpi(allBin2use, 'pupil_lp_minRT_neg200_200_regress_bl_iti_side');
 
 idx_alpha       = strcmpi(allBin2use, 'pretarget_alpha');
 idx_alpha_asym  = strcmpi(allBin2use, 'pretarget_alpha_asym');

@@ -63,6 +63,9 @@ allPupil_lp=[]; allPupilr_lp=[];
 allPupil_bp=[]; allPupilr_bp=[];
 allPupil_lp_baseline=[]; allPupil_bp_baseline=[];
 allPupil_lp_RT_neg200_200=[]; allPupil_bp_RT_neg200_200=[];
+allMinRT = []; allMeanRT = [];
+allPupil_lp_minRT_neg200_200=[]; allPupil_bp_minRT_neg200_200=[];
+allPupil_lp_meanRT_neg200_200=[]; allPupil_bp_meanRT_neg200_200=[];
 allPupil_lp_linproj_resp_locked_neg500_200=[];allPupil_bp_linproj_resp_locked_neg500_200=[];
 allPupil_lp_baseline_zscore = [];
 % trial window index
@@ -179,7 +182,15 @@ for isub = single_participants
 
     allPupil_bp_RT_neg200_200   = [allPupil_bp_RT_neg200_200 ; DAT.pupil.RT.bp.neg200_200];
     allPupil_lp_RT_neg200_200   = [allPupil_lp_RT_neg200_200 ; DAT.pupil.RT.lp.neg200_200];
-    
+
+    allMinRT                       = [allMinRT ; DAT.pupil.minRT.windowCentre];
+    allPupil_bp_minRT_neg200_200   = [allPupil_bp_minRT_neg200_200 ; DAT.pupil.minRT.bp.neg200_200];
+    allPupil_lp_minRT_neg200_200   = [allPupil_lp_minRT_neg200_200 ; DAT.pupil.minRT.lp.neg200_200];
+
+    allMeanRT                       = [allMeanRT ; DAT.pupil.meanRT.windowCentre];
+    allPupil_bp_meanRT_neg200_200   = [allPupil_bp_meanRT_neg200_200 ; DAT.pupil.meanRT.bp.neg200_200];
+    allPupil_lp_meanRT_neg200_200   = [allPupil_lp_meanRT_neg200_200 ; DAT.pupil.meanRT.lp.neg200_200];
+
     allPupil_lp_linproj_resp_locked_neg500_200      = [allPupil_lp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.lp.resp_locked_neg500_200];
     allPupil_bp_linproj_resp_locked_neg500_200      = [allPupil_bp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.bp.resp_locked_neg500_200];
     

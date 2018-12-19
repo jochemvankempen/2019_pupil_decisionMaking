@@ -368,12 +368,27 @@ for isub = 1:nSub
             designM = [ones(size(allPupil_lp_RT_neg200_200(trIdx))) allPupil_lp_baseline(trIdx) allItitr(trIdx) allSideStimtr(trIdx)];
             [b, ~, resid] = regress(allPupil_lp_RT_neg200_200(trIdx), designM);
             binningVariable = resid;
+            
         case 'pupil_bp_RT_neg200_200_regress_bl_iti_side'
 
             designM = [ones(size(allPupil_bp_RT_neg200_200(trIdx))) allPupil_bp_baseline(trIdx) allItitr(trIdx) allSideStimtr(trIdx)];
             [b, ~, resid] = regress(allPupil_bp_RT_neg200_200(trIdx), designM);
             binningVariable = resid;
 
+        case 'pupil_lp_minRT_neg200_200_regress_bl_iti_side'
+
+            designM = [ones(size(allPupil_lp_minRT_neg200_200(trIdx))) allPupil_lp_baseline(trIdx) allItitr(trIdx) allSideStimtr(trIdx)];
+            [b, ~, resid] = regress(allPupil_lp_minRT_neg200_200(trIdx), designM);
+            binningVariable = resid;
+
+        
+        case 'pupil_lp_RT_neg200_200_regress_bl_iti_side_RT'
+            
+            allRT_unit = allRT_log(trIdx) / norm(allRT_log(trIdx)); % RT is partialled out using unit vector of log-transformed RT (Urai et al., 2017, Donner lab)
+            designM = [ones(size(allPupil_lp_RT_neg200_200(trIdx))) allPupil_lp_baseline(trIdx) allItitr(trIdx) allSideStimtr(trIdx) allRT_unit];
+            [b, ~, resid] = regress(allPupil_lp_RT_neg200_200(trIdx), designM);
+            binningVariable = resid;
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%% Other
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

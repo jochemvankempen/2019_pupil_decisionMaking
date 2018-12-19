@@ -59,14 +59,18 @@ nbin            = 5;
 bintype         = 'equal';
 
 # which sorting?
-bin2use         = 'pupil_lp_baseline_regress_iti_side'
+# bin2use         = 'pupil_lp_baseline_regress_iti_side'
 # bin2use         = 'pupil_bp_baseline_regress_iti_side'
-
 
 # bin2use         = 'pupil_lp_RT_neg200_200_regress_bl_iti_side';
 # bin2use         = 'pupil_bp_RT_neg200_200_regress_bl_iti_side';
 # bin2use         = 'pretarget_alpha';
 # bin2use         = 'N2i_amplitude_regress_iti_side'
+
+# bin2use         = 'pupil_lp_RT_neg200_200_regress_bl_iti_side_RT';
+
+bin2use         = 'pupil_lp_minRT_neg200_200_regress_bl_iti_side';
+
 
 # ------------------------------------------------------------------------
 # look at data averaged for each participannt
@@ -74,7 +78,7 @@ bin2use         = 'pupil_lp_baseline_regress_iti_side'
 
 # load participant level data
 filename = str_c('participant_level_side(',nside ,')_bin(', nbin, ')_', bin2use ,
-                 '_equal_CSD(', CSD, ')_','chAlpha(', nChanAlpha, ')_final' )
+                 '_equal_CSD(', CSD, ')_','chAlpha(', nChanAlpha, ')_review' )
 data_p_level = read_csv(str_c(filedir, filename,'.csv'))
 
 data_p_level$Subject <- factor(data_p_level$Subject)

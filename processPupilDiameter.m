@@ -142,6 +142,30 @@ for itrial = 1:nTrial
  
 end
 
+% Pupil dilation response, for shortest possible RT. To correct for
+% increased pupil dilation with longer RT
+
+minRT = min(RT(validtr));
+RTwindow = (tt > (minRT-200) & tt < (minRT+200));
+
+if minRT < 200
+%     keyboard
+end
+pupil.minRT.windowCentre = minRT;
+pupil.minRT.bp.neg200_200 = ( mean(pupil.bp(RTwindow, :), 1) - baseline_bp )';
+pupil.minRT.lp.neg200_200 = ( mean(pupil.lp(RTwindow, :), 1) - baseline_lp )';
+
+% Pupil dilation response, for mean RT. To correct for
+% increased pupil dilation with longer RT
+
+meanRT = mean(RT(validtr));
+RTwindow = (tt > (meanRT-200) & tt < (meanRT+200));
+
+pupil.meanRT.windowCentre = meanRT;
+pupil.meanRT.bp.neg200_200 = ( mean(pupil.bp(RTwindow, :), 1) - baseline_bp )';
+pupil.meanRT.lp.neg200_200 = ( mean(pupil.lp(RTwindow, :), 1) - baseline_lp )';
+
+
 %% Baseline
 baseline     = mean(pupil.lp(find(tt>=set.BL(1) & tt<=set.BL(2)),:),1);
 pupil.lp     = pupil.lp  - repmat(baseline,[size(pupil.lp,1)],1); % baseline full erp
