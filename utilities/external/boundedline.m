@@ -124,6 +124,21 @@ if ~isscalar(trans) || trans < 0 || trans > 1
     error('Transparency must be scalar between 0 and 1');
 end
 
+% EdgeColor
+
+[found, edgec, varargin] = parseparam(varargin, 'edgecolor');
+
+if ~found
+    edgec = 'none';
+end
+
+if ~ischar(edgec)
+    if ~(length(edgec)>=3 && length(edgec)<=4)
+        error('Edgecolor must be a vector of 3/4 numbers');
+    end
+end
+
+
 % Orientation
 
 [found, orient, varargin] = parseparam(varargin, 'orientation');
@@ -320,7 +335,7 @@ axes(hax);
 hold all;
 
 for iln = 1:nline
-    hp(iln) = patch(xp{iln}, yp{iln}, ptchcol{iln}, 'facealpha', alpha{iln}, 'edgecolor', 'none');
+    hp(iln) = patch(xp{iln}, yp{iln}, ptchcol{iln}, 'facealpha', alpha{iln}, 'edgecolor', edgec);
 end
 
 for iln = 1:nline

@@ -58,27 +58,48 @@ test2 = [test{:}]';
 test3 = cellfun(@str2double,test2,'UniformOutput',false);
 ET.event = cell2mat(test3);
 
-%find blinks
-triggerKeyword='EBLINK L';
-test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+%find blinks/saccades
+
+eventType1 = 'EBLINK';
+eventType2 = 'ESACC';
+
+side=[' L'];
+
+test  = regexp(ET.messages,[eventType1, side,'\s?(\d+)','\s?(\d+)'],'tokens')';
 test2 = [test{:}]';
 test3 = cellfun(@str2double,test2,'UniformOutput',false);
-tmp = cell2mat(test3);
+tmp1 = cell2mat(test3);
+
+test  = regexp(ET.messages,[eventType2, side,'\s\s?(\d+)','\s?(\d+)'],'tokens')';
+test2 = [test{:}]';
+test3 = cellfun(@str2double,test2,'UniformOutput',false);
+tmp2 = cell2mat(test3);
+
+tmp = [tmp1 ; tmp2];
 
 if isempty(tmp)
-    triggerKeyword='EBLINK R';
-    test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+    side=[' R'];
+    
+    test  = regexp(ET.messages,[eventType1, side,'\s?(\d+)','\s?(\d+)'],'tokens')';
     test2 = [test{:}]';
     test3 = cellfun(@str2double,test2,'UniformOutput',false);
-    tmp = cell2mat(test3);
+    tmp1 = cell2mat(test3);
+    
+    test  = regexp(ET.messages,[eventType2, side,'\s\s?(\d+)','\s?(\d+)'],'tokens')';
+    test2 = [test{:}]';
+    test3 = cellfun(@str2double,test2,'UniformOutput',false);
+    tmp2 = cell2mat(test3);
+    
+    tmp = [tmp1 ; tmp2];
 end
 
+
 if ~isempty(tmp)
-    ET.blinkevent = [tmp(:,1) ones(size(tmp,1),1) ; tmp(:,2) ones(size(tmp,1),1)*2 ];
+    ET.eyelinkevent = [tmp(:,1) ones(size(tmp,1),1) ; tmp(:,2) ones(size(tmp,1),1)*2 ];
 else
-    ET.blinkevent=[];
+    ET.eyelinkevent=[];
 end
-ET.blinkevent = sortrows([ET.event ; ET.blinkevent]); %1 = start blink, 2 = end blink
+ET.eyelinkevent = sortrows([ET.event ; ET.eyelinkevent]); %1 = start blink, 2 = end blink
 
 %%
 % GL: Make sure the time sample of each event exists in ET.data.

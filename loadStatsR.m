@@ -84,6 +84,7 @@ if ~isempty(forceMod)
         case 'Quadratic'
             stats = mfit.Q;
             stats.model = 'Quadratic';
+            stats.U = R_stats.U(idx);
             fit = fitQ;
     end
     
@@ -91,6 +92,7 @@ else
     if mfit.Q.p < 0.05
         stats = mfit.Q;
         stats.model = 'Quadratic';
+        stats.U = R_stats.U(idx);
         fit = fitQ;
     elseif mfit.L.p < 0.05
         stats = mfit.L;

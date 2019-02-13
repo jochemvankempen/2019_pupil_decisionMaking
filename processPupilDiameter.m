@@ -42,8 +42,11 @@ function [pupil, pupilr] = processPupilDiameter(inp_pupil, set, validtr, RT)
 %     (3,:,:) = 
 %     (4,:,:) = raw pupil diameter, AREA
 %     (5,:,:) = blink interpolated pupil diameter
-%     (6,:,:) = interpolated and low-pass filtered pupil diameter
-%     (7:n,:) = interpolated and band-pass filtered pupil diameter
+%     (6,:,:) = interpolated and low-pass filtered pupil diameter < 4 Hz
+%     (7,:,:) = interpolated and band-pass filtered pupil diameter 0.05 - 4
+%     (8,:,:) = instantaneous phase
+%     (9,:,:) = interpolated and low-pass filtered pupil diameter < 1 Hz
+%     (10,:,:) = interpolated and band-pass filtered pupil diameter 0.05 - 1 Hz
 % set: struct with fields:
 %     t
 %     tr
@@ -73,8 +76,11 @@ fs      = set.fs;
 
 %% pick the data you want to use
 % if set.filter
-    pupil.lp = squeeze(inp_pupil(6,:,:)); %low pass filtered data 6Hz
-    pupil.bp = squeeze(inp_pupil(7,:,:)); %band pass filtered data 0.1-6Hz
+    pupil.lp = squeeze(inp_pupil(6,:,:)); %low pass filtered data 4Hz
+    pupil.bp = squeeze(inp_pupil(7,:,:)); %band pass filtered data 0.1-4Hz
+    
+    pupil.lp_1Hz = squeeze(inp_pupil(9,:,:)); %low pass filtered data 1Hz
+
 % else
 %     pupil = squeeze(inp_pupil(5,:,:)); %blink interpolated data
 % end
@@ -83,6 +89,7 @@ fs      = set.fs;
 
 pupil.scaleFactor.lp = 0;
 pupil.scaleFactor.bp = 0;
+pupil.scaleFactor.lp_1Hz = 0;
 for itrial = 1:length(validtr)
     if validtr(itrial) == 0
         continue
@@ -90,16 +97,21 @@ for itrial = 1:length(validtr)
     
     tmp_scaleFactor_lp = max(pupil.lp(find(tt>=set.BL(1) & tt<=(RT(itrial) * 1000/fs + 200)),itrial));%scaling factor, scale by maximum value measured in any trial
     tmp_scaleFactor_bp = max(pupil.bp(find(tt>=set.BL(1) & tt<=(RT(itrial) * 1000/fs + 200)),itrial));%scaling factor, scale by maximum value measured in any trial
+    tmp_scaleFactorlp_1Hz = max(pupil.lp_1Hz(find(tt>=set.BL(1) & tt<=(RT(itrial) * 1000/fs + 200)),itrial));%scaling factor, scale by maximum value measured in any trial
     if tmp_scaleFactor_lp > pupil.scaleFactor.lp
         pupil.scaleFactor.lp = tmp_scaleFactor_lp;
     end
     if tmp_scaleFactor_bp > pupil.scaleFactor.bp
         pupil.scaleFactor.bp = tmp_scaleFactor_bp;
     end
+    if tmp_scaleFactorlp_1Hz > pupil.scaleFactor.lp_1Hz
+        pupil.scaleFactor.lp_1Hz = tmp_scaleFactorlp_1Hz;
+    end
 end
 
 pupil.lp  = pupil.lp/pupil.scaleFactor.lp; %normalise 
 pupil.bp  = pupil.bp/pupil.scaleFactor.bp; %normalise 
+pupil.lp_1Hz  = pupil.lp_1Hz/pupil.scaleFactor.lp_1Hz; %normalise 
 
 
 
@@ -120,6 +132,7 @@ end
 tIdx = tt>set.BL(1) & tt<set.BL(2);
 pupil.baseline.lp = squeeze(mean(pupil.lp(tIdx,:),1))'; %use non-baselined pupil diameter
 pupil.baseline.bp = squeeze(mean(pupil.bp(tIdx,:),1))'; %use non-baselined pupil diameter
+pupil.baseline.lp_1Hz = squeeze(mean(pupil.lp_1Hz(tIdx,:),1))'; %use non-baselined pupil diameter
 
 clear tIdx
 
@@ -142,30 +155,6 @@ for itrial = 1:nTrial
  
 end
 
-% Pupil dilation response, for shortest possible RT. To correct for
-% increased pupil dilation with longer RT
-
-minRT = min(RT(validtr));
-RTwindow = (tt > (minRT-200) & tt < (minRT+200));
-
-if minRT < 200
-%     keyboard
-end
-pupil.minRT.windowCentre = minRT;
-pupil.minRT.bp.neg200_200 = ( mean(pupil.bp(RTwindow, :), 1) - baseline_bp )';
-pupil.minRT.lp.neg200_200 = ( mean(pupil.lp(RTwindow, :), 1) - baseline_lp )';
-
-% Pupil dilation response, for mean RT. To correct for
-% increased pupil dilation with longer RT
-
-meanRT = mean(RT(validtr));
-RTwindow = (tt > (meanRT-200) & tt < (meanRT+200));
-
-pupil.meanRT.windowCentre = meanRT;
-pupil.meanRT.bp.neg200_200 = ( mean(pupil.bp(RTwindow, :), 1) - baseline_bp )';
-pupil.meanRT.lp.neg200_200 = ( mean(pupil.lp(RTwindow, :), 1) - baseline_lp )';
-
-
 %% Baseline
 baseline     = mean(pupil.lp(find(tt>=set.BL(1) & tt<=set.BL(2)),:),1);
 pupil.lp     = pupil.lp  - repmat(baseline,[size(pupil.lp,1)],1); % baseline full erp
@@ -175,16 +164,24 @@ baseline     = mean(pupil.bp(find(tt>=set.BL(1) & tt<=set.BL(2)),:),1);
 pupil.bp     = pupil.bp  - repmat(baseline,[size(pupil.bp,1)],1); % baseline full erp
 pupilr.bp    = pupilr.bp - repmat(baseline,[size(pupilr.bp,1)],1); % baseline full erp
 
+baseline     = mean(pupil.lp_1Hz(find(tt>=set.BL(1) & tt<=set.BL(2)),:),1);
+pupil.lp_1Hz = pupil.lp_1Hz  - repmat(baseline,[size(pupil.lp_1Hz,1)],1); % baseline full erp
+
 %% zscore 
 
 pupil.baseline_zscore.lp = NaN(size(pupil.baseline.lp));
 pupil.baseline_zscore.bp = NaN(size(pupil.baseline.lp));
+pupil.baseline_zscore.lp_1Hz = NaN(size(pupil.baseline.lp));
 pupil.RT_zscore.lp.neg200_200 = NaN(size(pupil.baseline.lp));
 pupil.RT_zscore.bp.neg200_200 = NaN(size(pupil.baseline.lp));
 
 pupil.baseline_zscore.lp(validtr) = zscore(pupil.baseline.lp(validtr));
 pupil.baseline_zscore.bp(validtr) = zscore(pupil.baseline.bp(validtr));
+pupil.baseline_zscore.lp_1Hz(validtr) = zscore(pupil.baseline.lp_1Hz(validtr));
 pupil.RT_zscore.lp.neg200_200(validtr) = zscore(pupil.RT.lp.neg200_200(validtr));
 pupil.RT_zscore.bp.neg200_200(validtr) = zscore(pupil.RT.bp.neg200_200(validtr));
 
+%% get phase of Pupil
+
+pupil.baselinephase.bp  = squeeze(angle(mean(exp(1i*(inp_pupil(8,find(tt>=set.BL(1) & tt<=set.BL(2)),:)))))); %phase pupil
 

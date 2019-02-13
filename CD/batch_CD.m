@@ -97,13 +97,13 @@ end
 %% single trial analysis
 if Job.analyse_CDT
     parfor isub = 1:nSub
-        analyse_CDT(isub, single_participants, dataset, [fileExt '_final']) % use same analysis script as bigDots
+        analyse_CDT(isub, single_participants, dataset, [fileExt '_review']) % use same analysis script as bigDots
 
     end
 end
 
 %% create single trial matrix 
-analyse_CDT_fileExt = ['_final'];
+analyse_CDT_fileExt = ['_review'];
 if 0
     collect_data
 else
@@ -114,6 +114,11 @@ end
 %% write single trial matrix to csv
 
 write_st_matrix_csv
+
+
+%% plot GLM fit
+
+plot_pLevel_bigDots_GLM
 
 %% collect p_level
 % sort and average data, write out to csv file for R analysis
