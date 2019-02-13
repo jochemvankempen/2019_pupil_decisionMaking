@@ -61,20 +61,58 @@ test3 = cellfun(@str2double,test2,'UniformOutput',false);
 ET.event = cell2mat(test3);
 ET.event(:,2) = 8*ones(size(ET.event,1),1); % set these events to the start of the trial, equate with triggers in EEG
 
-%find blinks
-triggerKeyword='EBLINK R ';
-test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+%find blinks/saccades
+eventType1 = 'EBLINK';
+eventType2 = 'ESACC';
+
+side=[' L'];
+
+test  = regexp(ET.messages,[eventType1, side,'\s?(\d+)','\s?(\d+)'],'tokens')';
 test2 = [test{:}]';
 test3 = cellfun(@str2double,test2,'UniformOutput',false);
-tmp = cell2mat(test3);
+tmp1 = cell2mat(test3);
+
+test  = regexp(ET.messages,[eventType2, side,'\s\s?(\d+)','\s?(\d+)'],'tokens')';
+test2 = [test{:}]';
+test3 = cellfun(@str2double,test2,'UniformOutput',false);
+tmp2 = cell2mat(test3);
+
+tmp = [tmp1 ; tmp2];
 
 if isempty(tmp)
-    triggerKeyword='EBLINK L';
-    test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+    side=[' R'];
+    
+    test  = regexp(ET.messages,[eventType1, side,'\s?(\d+)','\s?(\d+)'],'tokens')';
     test2 = [test{:}]';
     test3 = cellfun(@str2double,test2,'UniformOutput',false);
-    tmp = cell2mat(test3);
+    tmp1 = cell2mat(test3);
+    
+    test  = regexp(ET.messages,[eventType2, side,'\s\s?(\d+)','\s?(\d+)'],'tokens')';
+    test2 = [test{:}]';
+    test3 = cellfun(@str2double,test2,'UniformOutput',false);
+    tmp2 = cell2mat(test3);
+    
+    tmp = [tmp1 ; tmp2];
 end
+
+% 
+% 
+% 
+% 
+% %find blinks
+% triggerKeyword='EBLINK R ';
+% test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+% test2 = [test{:}]';
+% test3 = cellfun(@str2double,test2,'UniformOutput',false);
+% tmp = cell2mat(test3);
+% 
+% if isempty(tmp)
+%     triggerKeyword='EBLINK L';
+%     test  = regexp(ET.messages,[triggerKeyword,'\s?(\d+)','\s?(\d+)'],'tokens')';
+%     test2 = [test{:}]';
+%     test3 = cellfun(@str2double,test2,'UniformOutput',false);
+%     tmp = cell2mat(test3);
+% end
 
 if ~isempty(tmp)
     ET.blinkevent = [tmp(:,1) ones(size(tmp,1),1) ; tmp(:,2) ones(size(tmp,1),1)*2 ];

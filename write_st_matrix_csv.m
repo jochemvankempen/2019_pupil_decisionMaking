@@ -30,6 +30,16 @@
 % https://github.com/jochemvankempen/2018_Monash
 %
 % -------------------------------------------------------------------------
+
+%% regress out phase of pupil response
+pupilResp = nan(size(allGLM_pupil_Ramp_stim_beta));
+for isub = 1:nSub
+    trIdx = (allSubject==isub) & allvalidtr_neg100_RT_200;
+    designM = [ones(size(allGLM_pupil_Ramp_stim_beta(trIdx))) cos(allPupil_bp_baselinePhase(trIdx)) sin(allPupil_bp_baselinePhase(trIdx))];
+    [b, ~, resid] = regress(allGLM_pupil_Ramp_stim_beta(trIdx), designM);
+    pupilResp(trIdx) = resid;
+end
+
 %% grab some single trial data, and write to csv
 
 allRT_log(allRT_log==-inf)=0; % correct for infinity result from log transform
@@ -37,26 +47,52 @@ allRT_log(allRT_log==-inf)=0; % correct for infinity result from log transform
 disp('writing st matrix')
 
 varNames = {...
-    'ID', 'Subject', 'allTrials', 'allvalidtr_neg500_RT_200', 'allvalidtr_neg100_RT_200',...
+    'ID', 'Subject', 'allTrials', 'allvalidtr_neg500_0', 'allvalidtr_neg100_RT_200',...
     'Outcome', 'StimLoc', 'ITI', ...
     'Trial',  ...
     'blockTrial', ...
     'RT', 'RT_log', ...
-    'allPupil_lp_baseline','allPupil_bp_baseline','allPupil_lp_RT_neg200_200','allPupil_bp_RT_neg200_200'};
+    'allPupil_lp_baseline','allGLM_pupil_Ramp_stim_beta','pupilResp'};
 
 MAT = table(...
-    ID, allSubject, (1:length(allSubject))', allvalidtr_neg500_RT_200,   allvalidtr_neg100_RT_200, ... 
+    allID, allSubject, (1:length(allSubject))', allvalidtr_neg500_0,   allvalidtr_neg100_RT_200, ... 
     allHits, allSideStimtr, allItitr, ...
     scaleVar(allTrial, 'minmax'), ...
     scaleVar(allBlockTrial, 'minmax'), ...
     scaleVar(allRT, 'minmax'), ...
     scaleVar(allRT_log, 'minmax'), ...
     scaleVar(allPupil_lp_baseline, 'minmax'), ...
-    scaleVar(allPupil_bp_baseline, 'minmax'), ...
-    scaleVar(allPupil_lp_RT_neg200_200, 'minmax'), ...
-    scaleVar(allPupil_bp_RT_neg200_200, 'minmax'), ...
+    scaleVar(allGLM_pupil_Ramp_stim_beta, 'minmax'), ...
+    scaleVar(pupilResp, 'minmax'), ...
     'VariableNames',varNames);
 
-filename_csv = [paths.pop 'allSub_singleTrial' fileExt '.csv'];
+filename_csv = [paths.pop 'allSub_singleTrial' [fileExt_preprocess fileExt_CDT] '.csv'];
 writetable(MAT,filename_csv)
+
+%% extract some info
+
+% how many trials rejected?
+trRej = cell(1,2);
+for itrwin = 1:2
+    
+    switch itrwin
+        case 1
+            trwin2check = 'allvalidtr_neg500_0';
+        case 2
+            trwin2check = 'allvalidtr_neg100_RT_200';
+    end
+    
+    for isub = 1:nSub
+        trIdx = MAT.Subject == isub;
+        eval(['trRej{itrwin}(isub, 1) = sum( MAT.' trwin2check ' (trIdx, :) == 0);']);
+        
+    end
+    
+    
+    fprintf('number of trials removed: %1.2f +- %1.2f\n', mean(trRej{itrwin}), std(trRej{itrwin})/sqrt(nSub))
+    
+end
+
+
+
 

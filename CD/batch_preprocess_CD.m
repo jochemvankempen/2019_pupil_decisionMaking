@@ -44,6 +44,13 @@ setAnalysisSettings_bigDots % use same settings as bigDots.
 
 saveBigFile = 1; %if 0, doesn't save 8Hz erp. Smaller file sizes
 
+savefilename = [paths.s(subIdx).base allsubj{subIdx} '_' dataset '_' erpfileExt '.mat'];
+
+if exist(savefilename,'file')
+    fprintf('file %s already exists\n', savefilename)
+%     return
+end
+
 %% CSD
 
 try
@@ -214,11 +221,16 @@ for iblock=blocks %6%
             targtrigs = [targtrigs n];
         end
     end
+    
+    %%% the pupil data is only recorded from the startpoint of the first
+    %%% trial, until the last trial. This causes problems with filtering of
+    %%% eye data etc. Therefore, we delete those.. 
+    targtrigs([1 end]) = [];
         
     if ~isempty(files(subIdx, iblock).ET_files)
         [ET_data] = interpolateET(ET_data, [stimes(targtrigs)' trigs(targtrigs)'] , tmpETevent, blinkevent, fs, files(subIdx,iblock).ET_matfiles, dataset);
     else
-        ET_data = zeros(7,size(EEG_LPF_35Hz.data,2));
+        ET_data = zeros(8,size(EEG_LPF_35Hz.data,2));
     end
     
     for n=1:length(targtrigs)
@@ -252,7 +264,7 @@ for iblock=blocks %6%
             erp_LPF_35Hz(:,:,numtr)     = zeros(nchan,ERP_samps);
             erp_LPF_8Hz_CSD(:,:,numtr)  = zeros(nchan,ERP_samps);
             erp_LPF_35Hz_CSD(:,:,numtr) = zeros(nchan,ERP_samps);
-            ET_trials(:,:,numtr)        = zeros(7,ERP_samps);
+            ET_trials(:,:,numtr)        = zeros(8,ERP_samps);
 
             continue;
         end
@@ -410,7 +422,7 @@ erp_LPF_8Hz_CSD     = single(erp_LPF_8Hz_CSD);
 erp_LPF_35Hz_CSD    = single(erp_LPF_35Hz_CSD);
 
 if saveBigFile
-    save([paths.s(subIdx).base allsubj{subIdx} '_' dataset '_' erpfileExt],...
+    save(savefilename,...
         'erp_LPF_8Hz','erp_LPF_35Hz','erp_LPF_8Hz_CSD','erp_LPF_35Hz_CSD', ...
         'allRT','allrespLR','allTrig','allblock_count','t','ET_trials', 'blockIdx', 'allITI', 'allUD',  ...
         'artifchans',...
@@ -418,7 +430,7 @@ if saveBigFile
         'artrej_ET', ...
         'artrej_pupil')
 else
-    save([paths.s(subIdx).base allsubj{subIdx} '_' dataset '_' erpfileExt],...
+    save(savefilename,...
         'erp_LPF_35Hz','erp_LPF_35Hz_CSD', ...
         'allRT','allrespLR','allTrig','allblock_count','t','ET_trials', 'blockIdx', 'allITI', 'allUD',  ...
         'artifchans',...

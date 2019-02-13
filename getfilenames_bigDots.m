@@ -39,17 +39,37 @@
 switch upper(getComputerName)
     case 'FMS-ION-511027'
         paths.base  = ['E:\Monash\bigDots\'];
+    case 'FMS-ION-ALEX02'
+        paths.base  = ['D:\Monash\bigDots\'];  
+    case 'ALEX1'
+        paths.base  = ['E:\Monash\bigDots\'];  
 end
 
-paths.data  = [paths.base 'data' filesep]; %
-paths.pop   = [paths.data 'population' filesep]; %
+paths.server  = ['\\campus\rdw\ion13\13\thieletapes3\Jochem\Monash\bigDots\'];
+
+if exist('readDataFromServer','var') && readDataFromServer
+    paths.readdata  = [paths.server 'data' filesep]; %
+    paths.savedata  = [paths.base 'data' filesep]; %
+
+else
+    paths.readdata  = [paths.base 'data' filesep]; %
+    paths.savedata  = [paths.base 'data' filesep]; %
+end
+
+paths.pop   = [paths.savedata 'population' filesep]; %
+
 
 for isub2=1:length(subject_folder)
     % path_temp = 'C:\Users\Ger Loughnane\Documents\Main Files\PhD\Projects\Evidence Acculumation Project\Dots Analysis\Study Participants\';
     % path_temp = 'C:\Users\Ger Loughnane\Documents\Main Files\PhD\Projects\Evidence Acculumation Project\Dots Analysis\Study Participants\';
-    paths.s(isub2).base           = [paths.data subject_folder{isub2} filesep];
-    paths.s(isub2).raw            = [paths.s(isub2).base 'raw' filesep];
-    paths.s(isub2).fig            = [paths.s(isub2).base 'fig_new' filesep];
+    paths.s(isub2).readbase       = [paths.readdata subject_folder{isub2} filesep];
+    paths.s(isub2).savebase       = [paths.savedata subject_folder{isub2} filesep];
+    paths.s(isub2).raw            = [paths.s(isub2).readbase 'raw' filesep];
+    paths.s(isub2).fig            = [paths.s(isub2).readbase 'fig_new' filesep];
+    
+    if ~exist(paths.s(isub2).savebase, 'dir')
+        mkdir(paths.s(isub2).savebase)
+    end
     
     for iblock = allblocks{isub2}
         
@@ -61,8 +81,8 @@ for isub2=1:length(subject_folder)
             files(isub2,iblock).edf   = [allsubj{isub2} '_' num2str(iblock) '.edf'];
             files(isub2,iblock).mat   = [allsubj{isub2} '_' num2str(iblock) '.mat'];
                         
-            files(isub2,iblock).ET_files     = [paths.data 'Samples_and_Events' filesep allsubj{isub2} '_' num2str(iblock) '.asc'];
-            files(isub2,iblock).ET_matfiles  = [paths.s(isub2).base allsubj{isub2} '_' num2str(iblock) '_ET.mat'];
+            files(isub2,iblock).ET_files     = [paths.readdata 'Samples_and_Events' filesep allsubj{isub2} '_' num2str(iblock) '.asc'];
+            files(isub2,iblock).ET_matfiles  = [paths.s(isub2).readbase allsubj{isub2} '_' num2str(iblock) '_ET.mat'];
 
         elseif ismember(subject_folder{isub2},Monash_bigdots)
             files(isub2,iblock).edf   = [allsubj{isub2} num2str(iblock) '.edf'];
@@ -71,8 +91,8 @@ for isub2=1:length(subject_folder)
             files(isub2,iblock).vhdr  = [allsubj{isub2} num2str(iblock) '.vhdr'];
             files(isub2,iblock).vmrk  = [allsubj{isub2} num2str(iblock) '.vmrk'];
             
-            files(isub2,iblock).ET_files     = [paths.data 'Samples_and_Events' filesep allsubj{isub2} num2str(iblock) '.asc'];
-            files(isub2,iblock).ET_matfiles  = [paths.s(isub2).base allsubj{isub2} num2str(iblock) '_ET.mat'];
+            files(isub2,iblock).ET_files     = [paths.readdata 'Samples_and_Events' filesep allsubj{isub2} num2str(iblock) '.asc'];
+            files(isub2,iblock).ET_matfiles  = [paths.s(isub2).readbase allsubj{isub2} num2str(iblock) '_ET.mat'];
                         
         end
         

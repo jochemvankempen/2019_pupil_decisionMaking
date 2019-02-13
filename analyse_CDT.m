@@ -1,4 +1,4 @@
-function analyse_CDT(isub, single_participants, dataset, fileExt)
+function analyse_CDT(isub, single_participants, dataset, loadExt, saveExt)
 % These scripts reproduce the analysis in the paper: van Kempen et al.,
 % (2018) 'Behavioural and neural signatures of perceptual evidence
 % accumulation are modulated by pupil-linked arousal'. 
@@ -152,9 +152,10 @@ if 0
     [~,plot_chans, exclude_chans] = getChannelName;
     tester = zeros(max(plot_chans),1);
     figure
-    chanlocs = readlocs('cap64.loc'); %biosemi
+%     chanlocs = readlocs('cap64.loc'); %biosemi
+    chanlocs = readlocs('JBhead96_sym.loc'); %biosemi96
     topoplot(tester,chanlocs,'maplimits', ...
-    [min(tester)  max(tester)],'electrodes','labels','plotchans',plot_chans);
+    [min(tester)  max(tester)],'electrodes','numbers','plotchans',plot_chans);
 end
 %% Triggers
 
@@ -179,6 +180,7 @@ end
 
 %% get subject index
 subIdx.sub  = single_participants(isub); %get matching subject
+subIdx.isub  = isub; %get matching subject
 % paths.fig = [paths.s(subIdx.sub).fig 'singleTrial' filesep];
 % if ~exist(paths.fig,'dir'),mkdir(paths.fig),end
 
@@ -186,12 +188,12 @@ subIdx.sub  = single_participants(isub); %get matching subject
 switch dataset
     case 'CD'
         for iside = 1:2 %up down
-            loadfilenames{iside} = [paths.data subject_folder{isub} filesep allsubj{isub} '_' dataset '_' side_tags{iside}(1) '_final.mat'];
+            loadfilenames{iside} = [paths.readdata subject_folder{isub} filesep allsubj{isub} '_' dataset '_' side_tags{iside}(1) '_final.mat'];
         end
-        savefilename = [paths.s(subIdx.sub).base allsubj{isub} fileExt '_ST.mat'];
+        savefilename = [paths.s(subIdx.sub).base allsubj{isub} loadExt saveExt '_ST.mat'];
     case 'bigDots'
-        loadfilenames{1} = [paths.data subject_folder{isub} filesep allsubj{isub} 'big_dots_erp_final.mat'];
-        savefilename = [paths.s(subIdx.sub).base allsubj{isub} fileExt '_ST.mat'];
+        loadfilenames{1} = [paths.readdata subject_folder{isub} filesep allsubj{isub} ['big_dots_erp' loadExt '.mat']];
+        savefilename = [paths.s(subIdx.sub).savebase allsubj{isub} loadExt saveExt '_ST.mat'];
 end
 
 %% start loop over separate data files
@@ -209,33 +211,42 @@ for ifile = 1:length(loadfilenames)
     initialise_variables
     
     %% ERP
-        tmp_erp_csd=double(erp_LPF_35Hz_CSD);%used for CPP
-%     tmp_erp_csd=double(erp_LPF_8Hz_CSD);%used for CPP
     
+    tmp_erp_csd_35Hz=double(erp_LPF_35Hz_CSD);%used for CPP
+    tmp_erp_csd_8Hz=double(erp_LPF_8Hz_CSD);%used for CPP
     if doCSD
-        tmp_erp=double(erp_LPF_35Hz_CSD);
-%         tmp_erp=double(erp_LPF_8Hz_CSD);
+        tmp_erp_35Hz=double(erp_LPF_35Hz_CSD);
+        tmp_erp_8Hz=double(erp_LPF_8Hz_CSD);
     else
-        tmp_erp=double(erp_LPF_35Hz);
-%         tmp_erp=double(erp_LPF_8Hz);
-    end
-    
+        tmp_erp_35Hz=double(erp_LPF_35Hz);
+        tmp_erp_8Hz=double(erp_LPF_8Hz);
+    end         
+
     % Baseline erp
-    baseline_erp        = mean(tmp_erp(:,find(t>=BL_time(1)     & t<=BL_time(2)),:),2);
-    baseline_erp_csd    = mean(tmp_erp_csd(:,find(t>=BL_time(1) & t<=BL_time(2)),:),2);
+    baseline_erp_8Hz        = mean(tmp_erp_8Hz(:,find(t>=BL_time(1)     & t<=BL_time(2)),:),2);
+    baseline_erp_csd_8Hz    = mean(tmp_erp_csd_8Hz(:,find(t>=BL_time(1) & t<=BL_time(2)),:),2);
+    baseline_erp_35Hz       = mean(tmp_erp_35Hz(:,find(t>=BL_time(1)     & t<=BL_time(2)),:),2);
+    baseline_erp_csd_35Hz   = mean(tmp_erp_csd_35Hz(:,find(t>=BL_time(1) & t<=BL_time(2)),:),2);
     
-    tmp_erp                 = tmp_erp           - repmat(baseline_erp,      [1,size(tmp_erp,2),1]); % baseline full erp
-    tmp_erp_csd             = tmp_erp_csd       - repmat(baseline_erp_csd,  [1,size(tmp_erp_csd,2),1]); % baseline full erp
+    tmp_erp_8Hz             = tmp_erp_8Hz       - repmat(baseline_erp_8Hz,      [1,size(tmp_erp_8Hz,2),1]); % baseline full erp
+    tmp_erp_csd_8Hz         = tmp_erp_csd_8Hz   - repmat(baseline_erp_csd_8Hz,  [1,size(tmp_erp_csd_8Hz,2),1]); % baseline full erp
+    tmp_erp_35Hz            = tmp_erp_35Hz      - repmat(baseline_erp_35Hz,     [1,size(tmp_erp_35Hz,2),1]); % baseline full erp
+    tmp_erp_csd_35Hz        = tmp_erp_csd_35Hz  - repmat(baseline_erp_csd_35Hz, [1,size(tmp_erp_csd_35Hz,2),1]); % baseline full erp
     
     % get response locked erp and pupil
-    tmp_erpr    = zeros(size(tmp_erp,1),length(tr),size(tmp_erp,3));
-    tmp_erpr_csd= zeros(size(tmp_erp_csd,1),length(tr),size(tmp_erp_csd,3));
+    tmp_erpr_8Hz    = zeros(size(tmp_erp_8Hz,1),length(tr),size(tmp_erp_8Hz,3));
+    tmp_erpr_csd_8Hz= zeros(size(tmp_erp_csd_8Hz,1),length(tr),size(tmp_erp_csd_8Hz,3));
+    tmp_erpr_35Hz    = zeros(size(tmp_erp_35Hz,1),length(tr),size(tmp_erp_35Hz,3));
+    tmp_erpr_csd_35Hz= zeros(size(tmp_erp_csd_35Hz,1),length(tr),size(tmp_erp_csd_35Hz,3));
+    
     for n=1:length(allRT)
-        [~,RTsamp] = min(abs(t*fs/1000-allRT(n))); % get the sample point of the RT.
+        [~,RTsamp] = min(abs(ts-allRT(n))); % get the sample point of the RT.
         RTsamp_idx(n) = RTsamp;
-        if RTsamp+trs(1) >0 && RTsamp+trs(length(trs))<=length(t) && allRT(n)>0 % isub the RT larger than 1st stim RT point, smaller than last RT point.
-            tmp_erpr(:,:,n)     = tmp_erp(:,RTsamp+trs,n);
-            tmp_erpr_csd(:,:,n) = tmp_erp_csd(:,RTsamp+trs,n);
+        if ( RTsamp+trs(1) > 0 ) && ( RTsamp+trs(length(trs))<=length(t) ) && ( allRT(n) > 0 ) % the RT larger than 1st stim RT point, smaller than last RT point.
+            tmp_erpr_8Hz(:,:,n)         = tmp_erp_8Hz(:,RTsamp+trs,n);
+            tmp_erpr_csd_8Hz(:,:,n)     = tmp_erp_csd_8Hz(:,RTsamp+trs,n);
+            tmp_erpr_35Hz(:,:,n)        = tmp_erp_35Hz(:,RTsamp+trs,n);
+            tmp_erpr_csd_35Hz(:,:,n)    = tmp_erp_csd_35Hz(:,RTsamp+trs,n);
             validrlock(idx_trFile(n),1)=1;
         end
     end
@@ -244,10 +255,10 @@ for ifile = 1:length(loadfilenames)
     
     % if not necessary, don't create these. They will be the biggest files
     if rawERP
-        ERP(:,:,idx_trFile)       = tmp_erp;
-        ERP_csd(:,:,idx_trFile)   = tmp_erp_csd;
-        ERPr(:,:,idx_trFile)      = tmp_erpr;
-        ERPr_csd(:,:,idx_trFile)  = tmp_erpr_csd;
+        ERP(:,:,idx_trFile)       = tmp_erp_35Hz;
+        ERP_csd(:,:,idx_trFile)   = tmp_erp_csd_35Hz;
+        ERPr(:,:,idx_trFile)      = tmp_erpr_35Hz;
+        ERPr_csd(:,:,idx_trFile)  = tmp_erpr_csd_35Hz;
     end
     
     %% trial indices & RT
@@ -285,24 +296,7 @@ for ifile = 1:length(loadfilenames)
             sideStimtr(idx_trFile,1) = allUD';
             ititr(idx_trFile,1)      = allITI';
     end
-    
-%     % extract info from trials preceding and following current trial
-%     allBlocks = unique(blockIdx);
-%     for iblock = 1:length(allBlocks)
-%         trIdx = find(blockIdx==allBlocks(iblock));
-%         
-%         for itrial = 1:length(find(trIdx))
-%             saveIdx = 1:RTwinsize*2+1;
-%             trwin = trIdx(itrial) + [-RTwinsize:RTwinsize];
-%             saveIdx = saveIdx(trwin >= trIdx(1) & trwin <= trIdx(end));
-%             trwin = trwin(trwin >= trIdx(1) & trwin <= trIdx(end));
-%             
-%             subRTz_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT_zscore(trwin);
-%             subRT_window(idx_trFile(trIdx(itrial)), saveIdx) = subRT(trwin);
-%             validRT_window(idx_trFile(trIdx(itrial)), saveIdx) = validRT(trwin);
-%         end
-%     end
-%     
+     
     switch dataset
         case {'bigDots','CD'}
             
@@ -335,16 +329,19 @@ for ifile = 1:length(loadfilenames)
         ch_N2i      = ch_N2_flip(isideStim);
         
         trIdx = (sideStimtr(idx_trFile,1) == isideStim);
-        N2c(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp(ch_N2c,:,trIdx),1));
-        N2i(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp(ch_N2i,:,trIdx),1));
+        N2c_8Hz(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp_8Hz(ch_N2c,:,trIdx),1));
+        N2i_8Hz(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp_8Hz(ch_N2i,:,trIdx),1));
+        N2c_35Hz(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp_35Hz(ch_N2c,:,trIdx),1));
+        N2cr_35Hz(:,idx_trFile(trIdx),1)    = squeeze(mean(tmp_erpr_35Hz(ch_N2c,:,trIdx),1));
+        N2i_35Hz(:,idx_trFile(trIdx),1)     = squeeze(mean(tmp_erp_35Hz(ch_N2i,:,trIdx),1));
     end
     
     tIdx = find(t>=200 & t<=300);
     
     try
-        N2c_topo(:,idx_trFile)    = squeeze(mean(tmp_erp(plot_chans,tIdx,:),2)); %get CPP response locked
+        N2c_topo(:,idx_trFile)    = squeeze(mean(tmp_erp_35Hz(plot_chans,tIdx,:),2)); %get CPP response locked
     catch
-        N2c_topo(:,idx_trFile)    = squeeze(mean(tmp_erp(:,tIdx,:),2)); %get CPP response locked
+        N2c_topo(:,idx_trFile)    = squeeze(mean(tmp_erp_35Hz(:,tIdx,:),2)); %get CPP response locked
         
     end
     %         figure,clf
@@ -353,79 +350,88 @@ for ifile = 1:length(loadfilenames)
     %         subplot(1,2,2)
     %         topoplot(squeeze(mean(N2c_topo(:,sideStimtr==2),2)),chanlocs,'electrodes','off','plotchans',plot_chans,'numcontour',0);
     %
-    
-    
     %% CPP
     
     % select the channel used for CPP and get ERPs from this/these channel(s)
     clear ch_CPP
     ch_CPP = getChannelName(ch_CPP_str, channelConfig);
     
-    CPP(:,idx_trFile)     = squeeze(mean(tmp_erp(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
-    CPPr(:,idx_trFile)    = squeeze(mean(tmp_erpr(ch_CPP,:,:),1)); % get CPP, response-locked
+    CPP_8Hz(:,idx_trFile)   = squeeze(mean(tmp_erp_8Hz(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
+    CPPr_8Hz(:,idx_trFile)  = squeeze(mean(tmp_erpr_8Hz(ch_CPP,:,:),1)); % get CPP, response-locked
+    CPP_35Hz(:,idx_trFile)  = squeeze(mean(tmp_erp_35Hz(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
+    CPPr_35Hz(:,idx_trFile) = squeeze(mean(tmp_erpr_35Hz(ch_CPP,:,:),1)); % get CPP, response-locked
     
     tIdx = find(trs>=-50 & trs<=50);
     try
-        CPP_topo(:,idx_trFile)    = squeeze(mean(tmp_erpr(plot_chans,tIdx,:),2)); 
+        CPP_topo(:,idx_trFile)    = squeeze(mean(tmp_erpr_35Hz(plot_chans,tIdx,:),2)); 
     catch
-        CPP_topo(:,idx_trFile)    = squeeze(mean(tmp_erpr(:,tIdx,:),2)); 
+        CPP_topo(:,idx_trFile)    = squeeze(mean(tmp_erpr_35Hz(:,tIdx,:),2)); 
     end
     %     topoplot(squeeze(mean(CPP_topo,2)),chanlocs,'electrodes','off','plotchans',plot_chans,'numcontour',0);
     
-    CPP_csd(:,idx_trFile)     = squeeze(mean(tmp_erp_csd(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
-    CPPr_csd(:,idx_trFile)    = squeeze(mean(tmp_erpr_csd(ch_CPP,:,:),1)); %get CPP response locked
+    CPP_csd_8Hz(:,idx_trFile)     = squeeze(mean(tmp_erp_csd_8Hz(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
+    CPPr_csd_8Hz(:,idx_trFile)    = squeeze(mean(tmp_erpr_csd_8Hz(ch_CPP,:,:),1)); %get CPP response locked
+    CPP_csd_35Hz(:,idx_trFile)     = squeeze(mean(tmp_erp_csd_35Hz(ch_CPP,:,:),1)); % get CPP, mean across channels if there are more than 1
+    CPPr_csd_35Hz(:,idx_trFile)    = squeeze(mean(tmp_erpr_csd_35Hz(ch_CPP,:,:),1)); %get CPP response locked
     
     
     %% Alpha
     
     % get spectral tranformation
-    [spectral_t,  ~, alpha_TSE] = compute_SpectrotemporalEvolution(tmp_erp,bandlimits_alpha,ch,t,tSpectral,fs,BL_spectrum);
+    [spectral_t,  ~, alpha_TSE] = compute_SpectrotemporalEvolution(tmp_erp_35Hz,bandlimits_alpha,ch,t,tSpectral,fs,BL_spectrum);
     
-    %select the channel used for occipital alpha
-    for isideCh = 1:2 % hemisphere, left and right
-        ch_alpha(isub,isideCh,:) = getChannelName(mean_ch_alpha(abs(isideCh-3),:),channelConfig);
+    switch dataset
+        case 'bigDots'
+            %select the channel used for occipital alpha
+            for isideCh = 1:nSideAlpha % hemisphere, left and right
+                ch_alpha(isub,isideCh,:) = getChannelName(mean_ch_alpha(abs(isideCh-3),:),channelConfig);
+            end
+        case 'CD'
+            ch_alpha(isub,1,:) = getChannelName(mean_ch_alpha,channelConfig);
+
     end
-    
     % get alpha
     tIdx = spectral_t>t_preTarget_alpha(1) & spectral_t<t_preTarget_alpha(2);
     alpha_preTarget_topo(:,idx_trFile) = squeeze(mean(alpha_TSE(1:nChan,tIdx,:),2));
-    
-    % do this for all trials, also the non-valid ones, this will be rejected after
-    for isideCh = 1:2 % hemisphere, left and right, average over predetermined channels for each hemisphere
-        if sum(ismember(ch_alpha(isub,isideCh,:), ch.right_hemi)) == nch_alpha % check that the correct channels will be put in the correct variables (matching right with right)
-            alphaRh_preTarget(idx_trFile,1)     = squeeze(mean(mean(alpha_TSE(ch_alpha(isub,isideCh,:),tIdx,:),1),2));
-        elseif sum(ismember(ch_alpha(isub,isideCh,:), ch.left_hemi)) == nch_alpha
-            alphaLh_preTarget(idx_trFile,1)     = squeeze(mean(mean(alpha_TSE(ch_alpha(isub,isideCh,:),tIdx,:),1),2));
-        end
-    end
     alpha_preTarget(idx_trFile,1)   = squeeze(mean(mean(alpha_TSE(ch_alpha(isub,:,:),tIdx,:),1),2));
     
-    %pretarget alpha asymmetry, asymmetry: right minus left. more positive = more right hemi alpha (= less dysynchronisation)
-    alphaAsym_preTarget(idx_trFile,1) = ...
-        (alphaRh_preTarget(idx_trFile,1) - alphaLh_preTarget(idx_trFile,1)) ./ ...
-        ((alphaRh_preTarget(idx_trFile,1) + alphaLh_preTarget(idx_trFile,1))/2);
-    
-    %pretarget alpha asym, keeping all channel info, for topoplots
-    alphaAsym_preTarget_topo(ch.elec_pairs(:,2),idx_trFile) = ...
-        (squeeze(mean(alpha_TSE(ch.elec_pairs(:,2),tIdx,:),2)) - squeeze(mean(alpha_TSE(ch.elec_pairs(:,1),tIdx,:),2))) ./...
-        ((squeeze(mean(alpha_TSE(ch.elec_pairs(:,2),tIdx,:),2)) + squeeze(mean(alpha_TSE(ch.elec_pairs(:,1),tIdx,:),2)))/2);
-    
+    switch dataset
+        case 'bigDots'
+            % do this for all trials, also the non-valid ones, this will be rejected after
+            for isideCh = 1:nSideAlpha % hemisphere, left and right, average over predetermined channels for each hemisphere
+                if sum(ismember(ch_alpha(isub,isideCh,:), ch.right_hemi)) == nch_alpha % check that the correct channels will be put in the correct variables (matching right with right)
+                    alphaRh_preTarget(idx_trFile,1)     = squeeze(mean(mean(alpha_TSE(ch_alpha(isub,isideCh,:),tIdx,:),1),2));
+                elseif sum(ismember(ch_alpha(isub,isideCh,:), ch.left_hemi)) == nch_alpha
+                    alphaLh_preTarget(idx_trFile,1)     = squeeze(mean(mean(alpha_TSE(ch_alpha(isub,isideCh,:),tIdx,:),1),2));
+                end
+            end
+            
+            %pretarget alpha asymmetry, asymmetry: right minus left. more positive = more right hemi alpha (= less dysynchronisation)
+            alphaAsym_preTarget(idx_trFile,1) = ...
+                (alphaRh_preTarget(idx_trFile,1) - alphaLh_preTarget(idx_trFile,1)) ./ ...
+                ((alphaRh_preTarget(idx_trFile,1) + alphaLh_preTarget(idx_trFile,1))/2);
+            
+            %pretarget alpha asym, keeping all channel info, for topoplots
+            alphaAsym_preTarget_topo(ch.elec_pairs(:,2),idx_trFile) = ...
+                (squeeze(mean(alpha_TSE(ch.elec_pairs(:,2),tIdx,:),2)) - squeeze(mean(alpha_TSE(ch.elec_pairs(:,1),tIdx,:),2))) ./...
+                ((squeeze(mean(alpha_TSE(ch.elec_pairs(:,2),tIdx,:),2)) + squeeze(mean(alpha_TSE(ch.elec_pairs(:,1),tIdx,:),2)))/2);
+    end
     %% Beta
     if beta_power == 1
         % get spectral tranformation
-        [spectral_t, ~, beta_TSE]  = compute_SpectrotemporalEvolution(tmp_erp,bandlimits_beta,ch,t,tSpectral,fs,BL_spectrum);
-        [spectral_tr,~, betar_TSE] = compute_SpectrotemporalEvolution(tmp_erpr,bandlimits_beta,ch,tr,tSpectral,fs,BL_spectrum);%lock beta to response
+        [spectral_t, ~, beta_TSE]  = compute_SpectrotemporalEvolution(tmp_erp_35Hz,bandlimits_beta,ch,t,tSpectral,fs,BL_spectrum);
+        [spectral_tr,~, betar_TSE] = compute_SpectrotemporalEvolution(tmp_erpr_35Hz,bandlimits_beta,ch,tr,tSpectral,fs,BL_spectrum);%lock beta to response
         
     elseif beta_power == 2
         % STFT calculation
         disp('Calculating STFT...')
-        tmp_erp = double(tmp_erp); % chan x time x trial
+        tmp_erp_35Hz = double(tmp_erp_35Hz); % chan x time x trial
         STFT = [];
-        for itrial = 1:size(tmp_erp,3)
+        for itrial = 1:size(tmp_erp_35Hz,3)
             cc=1;
-            for tt_beta = 1:skip_step:size(tmp_erp,2)-(stftlen_STFT)
+            for tt_beta = 1:skip_step:size(tmp_erp_35Hz,2)-(stftlen_STFT)
                 tf = tt_beta:tt_beta+stftlen_STFT-1; % define time window
-                ep = squeeze(tmp_erp(:,tf,itrial)); % chop out chan x time window
+                ep = squeeze(tmp_erp_35Hz(:,tf,itrial)); % chop out chan x time window
                 nfft = size(ep,2);
                 ep = detrend(ep')'; % detrend
                 fftx = abs(fft(ep,[],2))./(stftlen_STFT/2);
@@ -438,16 +444,18 @@ for ifile = 1:length(loadfilenames)
         end
         % rename, to keep consistent whatever method is used
         beta_TSE = STFT;
-        baseline_beta = mean(STFT(:,find(STFT_time>=BL_spectrum(1) & STFT_time<=BL_spectrum(2)),:),2);
-        beta_TSE_base = STFT-repmat(baseline_beta,[1,size(STFT,2),1]); % baseline full erp
         
+        % baseline per trial
+        baseline_beta = mean(STFT(:,find(STFT_time>=BL_spectrum(1) & STFT_time<=BL_spectrum(2)),:),2);
+        beta_TSE_base = STFT-repmat(baseline_beta,[1,size(STFT,2),1]); 
+
         STFT_timer= -600:unique(diff(STFT_time)):80;
         %Response locked STFT time in samples
         STFT_timers = (1:length(STFT_timer))-length(find(STFT_timer<=0));
         STFTr       = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
         STFTr_base  = zeros(size(STFT,1),length(STFT_timer),size(STFT,3));
         
-        for itrial = 1:size(tmp_erp,3)
+        for itrial = 1:size(tmp_erp_35Hz,3)
             if ~validrlock(idx_trFile(itrial))
                 continue
             end
@@ -471,8 +479,8 @@ for ifile = 1:length(loadfilenames)
     beta_base_postTarget(:,idx_trFile)  = squeeze(mean(beta_TSE_base(ch_beta(isub), :, :),1));
     
     % response locked beta
-    beta_preResponse(:,idx_trFile)      = squeeze(mean(betar_TSE(ch_beta(isub), :, :),1));
-    beta_base_preResponse(:,idx_trFile) = squeeze(mean(betar_TSE_base(ch_beta(isub), :, :),1));
+    beta_preResponse(:,idx_trFile)          = squeeze(mean(betar_TSE(ch_beta(isub), :, :),1));
+    beta_base_preResponse(:,idx_trFile)     = squeeze(mean(betar_TSE_base(ch_beta(isub), :, :),1));
             
     %post target beta, keeping all channel info, for topoplots
     tIdx = spectral_t>=t_postTarget_beta(1) & spectral_t<=t_postTarget_beta(2);
@@ -484,32 +492,45 @@ for ifile = 1:length(loadfilenames)
     beta_base_preResponse_topo(1:nChan,idx_trFile)  = squeeze(mean(betar_TSE_base(1:nChan, tIdx, :),2));
     
     
-    
     %% SPG chronux
     
     % N2
-    [SPG.N2c_power,  SPG.tt,   SPG.ff]    = mtspecgramc(N2c, movingwin,   SPG.params);
+    [SPG.N2c_power,  SPG.tt,   SPG.ff]    = mtspecgramc(N2c_35Hz, movingwin,   SPG.params);
     SPG.N2c_power = log10(SPG.N2c_power);
-    [SPG.N2c_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(N2c,movingwin,   SPG.params);
+    [SPG.N2c_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(N2c_35Hz,movingwin,   SPG.params);
     
-    [SPG.N2i_power,  SPG.tt,   SPG.ff]    = mtspecgramc(N2i, movingwin,   SPG.params);
+    [SPG.N2i_power,  SPG.tt,   SPG.ff]    = mtspecgramc(N2i_35Hz, movingwin,   SPG.params);
     SPG.N2i_power = log10(SPG.N2i_power);
-    [SPG.N2i_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(N2i,movingwin,   SPG.params);        %
+    [SPG.N2i_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(N2i_35Hz,movingwin,   SPG.params);        %
     
     % shorter time window for N2, control
-    [SPG.N2c_256_power,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc(N2c, movingwin_N2,   SPG.params);
+    [SPG.N2c_256_power,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc(N2c_35Hz, movingwin_256,   SPG.params);
     SPG.N2c_256_power = log10(SPG.N2c_256_power);
-    [SPG.N2c_256_phase,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc_phase(N2c, movingwin_N2,   SPG.params);
+    [SPG.N2c_256_phase,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc_phase(N2c_35Hz, movingwin_256,   SPG.params);
     
-    [SPG.N2i_256_power,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc(N2i, movingwin_N2,   SPG.params);
+    [SPG.N2i_256_power,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc(N2i_35Hz, movingwin_256,   SPG.params);
     SPG.N2i_256_power = log10(SPG.N2i_256_power);
-    [SPG.N2i_256_phase,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc_phase(N2i, movingwin_N2,   SPG.params);        %
+    [SPG.N2i_256_phase,  SPG.tt_256,   SPG.ff_256]    = mtspecgramc_phase(N2i_35Hz, movingwin_256,   SPG.params);        %
     
     %CPP
-    [SPG.CPP_power,  SPG.tt,   SPG.ff]    = mtspecgramc(CPP, movingwin,   SPG.params);
+    [SPG.CPP_power,  SPG.tt,   SPG.ff]    = mtspecgramc(CPP_35Hz, movingwin,   SPG.params);
     SPG.CPP_power = log10(SPG.CPP_power);
-    [SPG.CPP_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(CPP,movingwin,   SPG.params);
+    [SPG.CPP_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(CPP_35Hz,movingwin,   SPG.params);
     
+    [SPG.CPPr_power,  SPG.ttr,   SPG.ff]    = mtspecgramc(CPPr_35Hz, movingwin,   SPG.params);
+    SPG.CPPr_power = log10(SPG.CPPr_power);
+    [SPG.CPPr_phase,  SPG.ttr,   SPG.ff]    = mtspecgramc_phase(CPPr_35Hz,movingwin,   SPG.params);
+
+    % csd
+    [SPG.CPP_csd_power,  SPG.tt,   SPG.ff]    = mtspecgramc(CPP_csd_35Hz, movingwin,   SPG.params);
+    SPG.CPP_csd_power = log10(SPG.CPP_csd_power);
+    [SPG.CPP_csd_phase,  SPG.tt,   SPG.ff]    = mtspecgramc_phase(CPP_csd_35Hz,movingwin,   SPG.params);
+    
+    [SPG.CPPr_csd_power,  SPG.ttr,   SPG.ff]    = mtspecgramc(CPPr_csd_35Hz, movingwin,   SPG.params);
+    SPG.CPPr_csd_power = log10(SPG.CPPr_csd_power);
+    [SPG.CPPr_csd_phase,  SPG.ttr,   SPG.ff]    = mtspecgramc_phase(CPPr_csd_35Hz,movingwin,   SPG.params);
+
+
     %% pupil
     allET_trials(:,:,idx_trFile) = ET_trials;
 end
@@ -518,46 +539,18 @@ end
 
 [pupil, pupilr] = processPupilDiameter(allET_trials, pupilSet, validtr.neg100_RT_200, subRT);
 
-%%% get linear projection
-%%% response locked
-tIdx = find(tr>=-500 & tr<=200);
-validtr2use = validtr.neg100_RT_200;
-lpPupil.lp.resp_locked_neg500_200(validtr2use) = linearProjection(pupilr.lp(tIdx,validtr2use),tr(tIdx));
-lpPupil.bp.resp_locked_neg500_200(validtr2use) = linearProjection(pupilr.bp(tIdx,validtr2use),tr(tIdx));
-
-
-%% get trial indices to extract info from trials preceding and following current trial
-allBlocks = unique(blockIdx);
-for iblock = 1:length(allBlocks)
-    trIdx = find(blockIdx==allBlocks(iblock));
-    
-    for itrial = 1:length(find(trIdx))
-        saveIdx = 1:RTwinsize*2+1;
-        trwin = trIdx(itrial) + [-RTwinsize:RTwinsize];
-        saveIdx = saveIdx(trwin >= trIdx(1) & trwin <= trIdx(end));
-        trwin = trwin(trwin >= trIdx(1) & trwin <= trIdx(end));
-        
-        trialWindow_idx(idx_trFile(trIdx(itrial)), saveIdx) = trwin;
-        trialWindow_valid_RT(idx_trFile(trIdx(itrial)), saveIdx) = validRT(trwin);
-        trialWindow_valid_neg100_RT_200(idx_trFile(trIdx(itrial)), saveIdx) = validtr.neg100_RT_200(trwin);
-        trialWindow_valid_neg500_0(idx_trFile(trIdx(itrial)), saveIdx) = validtr.neg500_0(trwin);
-    end
-end
-
 
 %% save
-%     'subRT_window','subRTz_window','validRT_window',...
 save(savefilename, ...
     'trialIdx','blockIdx','blockTrialIdx','sideStimtr','motiontr','ititr','hits','misses','validrlock','subject',...
     'validtr','validtr_eye',...
     'subRT','subRT_log','subRT_zscore','validRT',...
-    'N2c','N2i','N2c_topo','N2i_topo',...
-    'CPP','CPP_csd','CPPr','CPPr_csd','CPP_topo',...
+    'N2c_8Hz','N2cr_35Hz','N2i_8Hz','N2c_35Hz','N2i_35Hz','N2c_topo',...
+    'CPP_8Hz','CPP_csd_8Hz','CPPr_8Hz','CPPr_csd_8Hz','CPP_35Hz','CPP_csd_35Hz','CPPr_35Hz','CPPr_csd_35Hz','CPP_topo',...
     'spectral_t','spectral_tr','alpha_preTarget','alphaRh_preTarget','alphaLh_preTarget','alpha_preTarget_topo','alphaAsym_preTarget','alphaAsym_preTarget_topo',...
     'beta_postTarget','beta_base_postTarget','beta_preResponse','beta_base_preResponse','beta_preResponse_topo','beta_base_preResponse_topo','beta_postTarget_topo', ...
     'SPG',...
-    'pupil','pupilr','lpPupil','validPupil_window',...
-    'trialWindow_idx','trialWindow_valid_RT','trialWindow_valid_neg100_RT_200','trialWindow_valid_neg500_0',...
+    'pupil','pupilr',...
     '-v7.3')
 
 toc

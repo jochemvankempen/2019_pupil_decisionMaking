@@ -1,4 +1,4 @@
-function batch_preprocess(allsubj, subIdx, paths, files, blocks, badchans, location, dataset, erpfileExt)
+function batch_preprocess(allsubj, subIdx, paths, files, blocks, badchans, location, dataset, fileExt)
 % These scripts reproduce the analysis in the paper: van Kempen et al.,
 % (2018) 'Behavioural and neural signatures of perceptual evidence
 % accumulation are modulated by pupil-linked arousal'. 
@@ -40,6 +40,7 @@ function batch_preprocess(allsubj, subIdx, paths, files, blocks, badchans, locat
 % Trigger 4: coherence 50, motion dir 270, ITI 5.17, patch 2
 % Trigger 5: coherence 50, motion dir 270, ITI 7.29, patch 1
 % Trigger 6: coherence 50, motion dir 270, ITI 7.29, patch 2
+tic
 
 plotVisible = 'off';
 plotFigures = 1;
@@ -49,11 +50,17 @@ setAnalysisSettings_bigDots
 
 saveBigFile = 1; %if 0, doesn't save 8Hz erp. Smaller file sizes
 
+savefilename = [paths.s(subIdx).savebase allsubj{subIdx} fileExt '.mat'];
+
+if exist(savefilename,'file')
+    fprintf('file %s already exists\n', savefilename)
+%     return
+end
 
 %% CSD prep
 
 try
-    load([paths.data 'csd_montage.mat'])
+    load([paths.readdata 'csd_montage.mat'])
 catch
     E = textread('chans64.asc','%s');
     M = ExtractMontage('10-5-System_Mastoids_EGI129.csd',E);  % reading in the montage for the CSD toolbox
@@ -65,7 +72,7 @@ catch
     % MapMontage(M);
     [G_monash,H_monash] = GetGH(M);
     
-    save([paths.data 'csd_montage.mat'],'G_TCD','H_TCD','G_monash','H_monash');
+    save([paths.savedata 'csd_montage.mat'],'G_TCD','H_TCD','G_monash','H_monash');
 end
 
 switch location
@@ -137,7 +144,7 @@ for iblock= blocks
     
     load([paths.s(subIdx).raw files(subIdx, iblock).mat],'trialCond','par');
     
-    if ~isempty(files(subIdx, iblock).ET_files)
+    if 1%~isempty(files(subIdx, iblock).ET_files)
         [~, name] = fileparts(files(subIdx, iblock).ET_files);
         if strcmpi(name, 'SW50M1') || strcmpi(name, 'SW50M16')
             screen_res = [1024 768];%somehow there is no information in the first block. Screen res taken from second block
@@ -159,7 +166,7 @@ for iblock= blocks
         if screen_res(1)==1024, ranger = 76; elseif screen_res(1)==1280, ranger = 98; else disp(screen_res), keyboard, end
         middle = screen_res/2;
         
-        if ~exist(files(subIdx, iblock).ET_matfiles, 'file') %DN: if ET matfile NOT been saved
+        if 1%~exist(files(subIdx, iblock).ET_matfiles, 'file') %DN: if ET matfile NOT been saved
             fixEyelinkMessages %then calculate and save it now
         end
     else
@@ -305,9 +312,9 @@ for iblock= blocks
     % this interpolation script is currently run twice, not very
     % efficient.. But doesn't take too long
     if ~isempty(files(subIdx, iblock).ET_files)
-        [ET_data] = interpolateET(ET_data, [stimes(motion_on)' trigs(motion_on)'] , tmpETevent, blinkevent, fs, files(subIdx,iblock).ET_matfiles, dataset);
+        [ET_data] = interpolateET(ET_data, [stimes(motion_on)' trigs(motion_on)'] , tmpETevent, eyelinkevent, fs, files(subIdx,iblock).ET_matfiles, dataset);
     else
-        ET_data = zeros(7,size(EEG_LPF_35Hz.data,2));
+        ET_data = zeros(10,size(EEG_LPF_35Hz.data,2));
     end
     
     for n=1:length(motion_on)
@@ -330,7 +337,7 @@ for iblock= blocks
         try
             ep_LPF_8Hz  = EEG_LPF_8Hz.data(:,locktime+ts);   % chop out an epoch
             ep_LPF_35Hz = EEG_LPF_35Hz.data(:,locktime+ts);
-            ep_ET       = ET_data(:,locktime+ts);
+            ep_ET       = ET_data(:,locktime+ts_pupil);
             %
         catch
             disp('EEG ended too soon2')
@@ -345,7 +352,7 @@ for iblock= blocks
             erp_LPF_35Hz(:,:,numtr)     = zeros(nchan,ERP_samps);
             erp_LPF_8Hz_CSD(:,:,numtr)  = zeros(nchan,ERP_samps);
             erp_LPF_35Hz_CSD(:,:,numtr) = zeros(nchan,ERP_samps);
-            ET_trials(:,:,numtr)        = zeros(7,ERP_samps);
+            ET_trials(:,:,numtr)        = zeros(10,ERP_samps);
             
             continue;
         end
@@ -371,9 +378,11 @@ for iblock= blocks
                 case {'neg500_0','neg100_0'}
                     %define time window for artifact rejection
                     eval(['ts_artif = (ts >= tt.' artifact_times{ifield} '(1) & ts <= tt.' artifact_times{ifield} '(2));'])
+                    eval(['ts_pupil_artif = (ts_pupil >= tt.' artifact_times{ifield} '(1) & ts_pupil <= tt.' artifact_times{ifield} '(2));'])
                 otherwise
                     % add 2nd element to RT
                     eval(['ts_artif = (ts >= tt.' artifact_times{ifield} '(1) & ts <= (response_time + tt.' artifact_times{ifield} '(2)));'])
+                    eval(['ts_pupil_artif = (ts_pupil >= tt.' artifact_times{ifield} '(1) & ts_pupil <= (response_time + tt.' artifact_times{ifield} '(2)));'])
             end
             
             % find artifacts in specified time windows in EEG channels
@@ -386,8 +395,8 @@ for iblock= blocks
             eval(['if length(artifchans_thistrial.' artifact_times{ifield} ') > 0, artrej.' artifact_times{ifield} '(numtr) = 0;  else artrej.' artifact_times{ifield} '(numtr) = 1; end'])
             
             % find trials where fixation was broken
-            artif_ET = find(ep_ET(2,find( ts_artif )) < middle(1)-ranger  |  ep_ET(2,find( ts_artif )) > middle(1)+ranger  | ... % x
-                ep_ET(3,find( ts_artif )) < middle(2)-ranger  |  ep_ET(3,find( ts_artif )) > middle(2)+ranger ); % y
+            artif_ET = find(ep_ET(2,find( ts_pupil_artif )) < middle(1)-ranger  |  ep_ET(2,find( ts_pupil_artif )) > middle(1)+ranger  | ... % x
+                ep_ET(3,find( ts_pupil_artif )) < middle(2)-ranger  |  ep_ET(3,find( ts_pupil_artif )) > middle(2)+ranger ); % y
             
             % 0 = reject, 1 = keep
             eval(['if length(artif_ET) > 0, artrej_ET.' artifact_times{ifield} '(numtr) = 0; else artrej_ET.' artifact_times{ifield} '(numtr) = 1;      end'])
@@ -431,7 +440,7 @@ for iblock= blocks
         end
     end
     if ~isempty(files(subIdx, iblock).ET_files)
-        [~,tmpET_artrej] = interpolateET(ET_data, [stimes(motion_on)' trigs(motion_on)'] , tmpETevent, blinkevent, fs, files(subIdx,iblock).ET_matfiles, dataset, artifacts_this_block, artifactsET_this_block, RT_this_block, tt);
+        [~,tmpET_artrej] = interpolateET(ET_data, [stimes(motion_on)' trigs(motion_on)'] , tmpETevent, eyelinkevent, fs, files(subIdx,iblock).ET_matfiles, dataset, artifacts_this_block, artifactsET_this_block, RT_this_block, tt);
         
         
         for ifield = 1:length(artifact_times)
@@ -485,7 +494,7 @@ if plotFigures
     D.fig = [paths.s(subIdx).fig 'preprocess' filesep];
     if ~exist(D.fig,'dir'),mkdir(D.fig),end
     
-    saveFigName = ['fig_artRej_' allsubj{subIdx} erpfileExt];
+    saveFigName = ['fig_artRej_' allsubj{subIdx} fileExt];
     fileExt = 'jpeg';
     print(gcf,['-d' fileExt],[paths.s(subIdx).fig saveFigName '.' fileExt])
 end
@@ -555,7 +564,7 @@ switch dataset
 end
 
 if saveBigFile
-    save([paths.s(subIdx).base allsubj{subIdx} erpfileExt],...
+    save(savefilename,...
         'erp_LPF_8Hz','erp_LPF_35Hz','erp_LPF_8Hz_CSD','erp_LPF_35Hz_CSD', ...
         'allRT','allrespLR','allTrig','allblock_count','t','ET_trials', 'blockIdx', ...
         'artifchans',...
@@ -563,7 +572,7 @@ if saveBigFile
         'artrej_ET', ...
         'artrej_pupil')
 else
-    save([paths.s(subIdx).base allsubj{subIdx} erpfileExt],...
+    save(savefilename,...
         'erp_LPF_35Hz','erp_LPF_35Hz_CSD', ...
         'allRT','allrespLR','allTrig','allblock_count','t','ET_trials', 'blockIdx', ...
         'artifchans',...
@@ -571,5 +580,5 @@ else
         'artrej_ET', ...
         'artrej_pupil')
 end
-
+toc
 return;

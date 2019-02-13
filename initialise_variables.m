@@ -70,55 +70,45 @@ subRT_log(idx_trFile,1)           = zeros(nTrFile,1); %logarithm of RT
 subRT_zscore(idx_trFile,1)        = nan(nTrFile,1); %zscore of logarithm of RT
 validRT(idx_trFile,1)             = false(nTrFile,1); %whether RT was valid
 
-% subRT_window(idx_trFile,:)        = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
-% subRTz_window(idx_trFile,:)       = NaN(nTrFile,RTwinsize*2+1); %RT for each trial, up to 5 back
-% validRT_window(idx_trFile,:)      = false(nTrFile,RTwinsize*2+1); %whether RT was valid
-
 % ERP
 rawERP=0;% file gets really big if you do compute this
 if rawERP
-    ERP(nChan,length(t),idx_trFile)         = zeros(nChan,length(t),nTrFile); %nChan, ntimepoints, ntrial, nSub
+    ERP(nChan,length(t),idx_trFile)         = zeros(nChan,length(t),nTrFile); %nChan, ntimepoints, ntrial, 
     ERPr(nChan,length(t),idx_trFile)        = zeros(nChan,length(tr),nTrFile); %
-    ERP_csd(nChan,length(t),idx_trFile)     = zeros(nChan,length(t),nTrFile); %nChan, ntimepoints, ntrial, nSub
+    ERP_csd(nChan,length(t),idx_trFile)     = zeros(nChan,length(t),nTrFile); %nChan, ntimepoints, ntrial, 
     ERPr_csd(nChan,length(t),idx_trFile)    = zeros(nChan,length(tr),nTrFile); %
 end
 
 % N2
-N2c(1:length(t),idx_trFile)                 = zeros(length(t),nTrFile); %ntimepoints, ntrial  nSub
-N2i(1:length(t),idx_trFile)                 = zeros(length(t),nTrFile); %
+N2c_8Hz(1:length(t),idx_trFile)             = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+N2i_8Hz(1:length(t),idx_trFile)             = zeros(length(t),nTrFile); %
+N2c_35Hz(1:length(t),idx_trFile)            = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+N2cr_35Hz(1:length(tr),idx_trFile)          = zeros(length(tr),nTrFile); %ntimepoints, ntrial  
+N2i_35Hz(1:length(t),idx_trFile)            = zeros(length(t),nTrFile); %
 N2c_topo                                    = zeros(nChan, nTrFile);
-N2i_topo                                    = zeros(nChan, nTrFile);
 
 % CPP
-CPP(1:length(t),idx_trFile)                 = zeros(length(t),nTrFile); %ntimepoints, ntrial  nSub
-CPPr(1:length(tr),idx_trFile)               = zeros(length(tr),nTrFile); %
-CPP_csd(1:length(t),idx_trFile)             = zeros(length(t),nTrFile); %ntimepoints, ntrial  nSub
-CPPr_csd(1:length(tr),idx_trFile)           = zeros(length(tr),nTrFile); %
+CPP_8Hz(1:length(t),idx_trFile)             = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+CPPr_8Hz(1:length(tr),idx_trFile)           = zeros(length(tr),nTrFile); %
+CPP_csd_8Hz(1:length(t),idx_trFile)         = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+CPPr_csd_8Hz(1:length(tr),idx_trFile)       = zeros(length(tr),nTrFile); %
+CPP_35Hz(1:length(t),idx_trFile)            = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+CPPr_35Hz(1:length(tr),idx_trFile)          = zeros(length(tr),nTrFile); %
+CPP_csd_35Hz(1:length(t),idx_trFile)        = zeros(length(t),nTrFile); %ntimepoints, ntrial  
+CPPr_csd_35Hz(1:length(tr),idx_trFile)      = zeros(length(tr),nTrFile); %
 CPP_topo                                    = zeros(nChan, nTrFile);
 
 % spectral - alpha
-alphaRh_preTarget(idx_trFile,1)             = zeros(nTrFile,1); %ntrial  nSub
-alphaLh_preTarget(idx_trFile,1)             = zeros(nTrFile,1); %ntrial  nSub
-alpha_preTarget(idx_trFile,1)               = zeros(nTrFile,1); %ntrial  nSub
-alphaAsym_preTarget(idx_trFile,1)           = zeros(nTrFile,1); %ntrial  nSub
+alphaRh_preTarget(idx_trFile,1)             = zeros(nTrFile,1); %ntrial  
+alphaLh_preTarget(idx_trFile,1)             = zeros(nTrFile,1); %ntrial  
+alpha_preTarget(idx_trFile,1)               = zeros(nTrFile,1); %ntrial  
+alphaAsym_preTarget(idx_trFile,1)           = zeros(nTrFile,1); %ntrial  
 
-alpha_preTarget_topo(1:nChan,idx_trFile)    = zeros(nChan,nTrFile); %ntrial nChan nSub
-alphaAsym_preTarget_topo(1:nChan,idx_trFile)= zeros(nChan,nTrFile); %ntrial nChan nSub
+alpha_preTarget_topo(1:nChan,idx_trFile)    = zeros(nChan,nTrFile); %ntrial nChan 
+alphaAsym_preTarget_topo(1:nChan,idx_trFile)= zeros(nChan,nTrFile); %ntrial nChan 
 
 % spectral - beta
-beta_postTarget_topo(1:nChan,idx_trFile)        = zeros(nChan,nTrFile); %ntrial nChan nSub
-beta_preResponse_topo(1:nChan,idx_trFile)       = zeros(nChan,nTrFile); %ntrial nChan nSub
-beta_base_preResponse_topo(1:nChan,idx_trFile)  = zeros(nChan,nTrFile); %ntrial nChan nSub
-
-%pupil
-lpPupil.bp.resp_locked_neg500_200(idx_trFile,1) = NaN(nTrFile,1);
-lpPupil.lp.resp_locked_neg500_200(idx_trFile,1) = NaN(nTrFile,1);
-
-% trial window
-trialWindow_idx(idx_trFile,:)                   = NaN(nTrFile,RTwinsize*2+1); % for each trial, up to RTwinsize backward and forward
-trialWindow_valid_neg100_RT_200(idx_trFile,:)   = false(nTrFile,RTwinsize*2+1); % whether trial was valid
-trialWindow_valid_neg500_0(idx_trFile,:)        = false(nTrFile,RTwinsize*2+1); % whether trial was valid
-trialWindow_valid_RT(idx_trFile,:)              = false(nTrFile,RTwinsize*2+1); % whether trial was valid
-
-
+beta_postTarget_topo(1:nChan,idx_trFile)        = zeros(nChan,nTrFile); %ntrial nChan 
+beta_preResponse_topo(1:nChan,idx_trFile)       = zeros(nChan,nTrFile); %ntrial nChan 
+beta_base_preResponse_topo(1:nChan,idx_trFile)  = zeros(nChan,nTrFile); %ntrial nChan 
 

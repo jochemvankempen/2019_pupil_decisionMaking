@@ -33,7 +33,9 @@
 
 %% append all subject files, collect in to one big matrix
 
-ID=[]; allTrial=[]; allBlock=[]; allBlockTrial=[]; allSideStimtr=[]; allSideStimtr_window=[]; allMotiontr=[]; allItitr=[]; allHits=[]; allMisses=[]; allValidrlock=[]; allSubject=[];  %idx
+allID=[]; allTrial=[]; allBlock=[]; allBlockTrial=[]; 
+allSideStimtr=[]; allMotiontr=[]; allItitr=[]; 
+allHits=[]; allMisses=[]; allValidrlock=[]; allSubject=[];  %idx
 
 allvalidtr=[]; allvalidtr_neg100_0=[]; allvalidtr_neg500_0=[];
 allvalidtr_neg100_RT_200=[]; allvalidtr_neg500_RT_200=[];
@@ -42,31 +44,36 @@ allvalidtr_neg100_RT_200=[]; allvalidtr_neg500_RT_200=[];
 allRT=[]; allRT_log=[]; allRT_zscore=[]; allValidRT=[]; 
 
 %N2
-allN2c=[]; allN2i=[]; allN2c_topo=[];
+allN2c=[]; allN2cr=[]; allN2i=[]; allN2c_topo=[];
+
 %CPP
-allCPP=[]; allCPP_csd=[]; allCPPr=[]; allCPPr_csd=[]; allCPP_topo=[]; %
+allCPP=[]; allCPP_csd=[]; allCPPr=[]; allCPPr_csd=[]; allCPPr_8Hz=[]; allCPPr_csd_8Hz=[]; allCPP_topo=[]; %
 
 % alpha
 allAlphaRh_preTarget=[]; allAlphaLh_preTarget=[];
-allAlpha_preTarget=[]; allAlphaAsym_preTarget=[]; allAlpha_preTarget_topo=[]; allAlphaAsym_preTarget_topo=[];
+allAlpha_preTarget=[]; allAlphaAsym_preTarget=[]; 
+allAlpha_preTarget_topo=[]; allAlphaAsym_preTarget_topo=[];
 
 % beta
-allBeta_postTarget=[]; allBeta_base_postTarget=[]; allBeta_preResponse=[]; allBeta_base_preResponse=[]; allBeta_preResponse_topo=[]; allBeta_base_preResponse_topo=[];
+allBeta_postTarget=[]; allBeta_base_postTarget=[]; 
+allBeta_preResponse=[]; allBeta_base_preResponse=[]; 
+allBeta_preResponse_topo=[]; allBeta_base_preResponse_topo=[];
 
 % SPG
 allN2c_power = []; allN2c_phase = []; allN2i_power = []; allN2i_phase = [];
 allN2c_256_power = []; allN2c_256_phase = []; allN2i_256_power = []; allN2i_256_phase = [];
 allCPP_power = []; allCPP_phase = [];
+allCPPr_power = []; allCPPr_phase = [];
+allCPP_csd_power = []; allCPP_csd_phase = [];
+allCPPr_csd_power = []; allCPPr_csd_phase = [];
 
 %pupil.
 allPupil_lp=[]; allPupilr_lp=[];
 allPupil_bp=[]; allPupilr_bp=[];
-allPupil_lp_baseline=[]; allPupil_bp_baseline=[];
+allPupil_lp_1Hz=[];
+allPupil_lp_baseline=[]; allPupil_lp_1Hz_baseline=[]; allPupil_bp_baseline=[]; allPupil_lp_baseline_zscore = [];
+allPupil_bp_baselinePhase=[];
 allPupil_lp_RT_neg200_200=[]; allPupil_bp_RT_neg200_200=[];
-allPupil_lp_linproj_resp_locked_neg500_200=[];allPupil_bp_linproj_resp_locked_neg500_200=[];
-allPupil_lp_baseline_zscore = [];
-% trial window index
-allTrial_window=[]; allTrial_window_valid_RT=[]; allTrial_window_valid_neg100_RT_200=[]; allTrial_window_valid_neg500_0=[];
 
 clear validtrials filenames
 tmpsub=0;
@@ -75,9 +82,9 @@ for isub = single_participants
     
     switch dataset
         case 'CD'
-            filenames = [paths.s(isub).base allsubj{isub} fileExt analyse_CDT_fileExt '_ST.mat'];
+            filenames = [paths.s(isub).readbase allsubj{isub} fileExt_preprocess fileExt_CDT '_ST.mat'];
         case 'bigDots'
-            filenames = [paths.s(isub).base allsubj{isub} fileExt analyse_CDT_fileExt '_ST.mat'];
+            filenames = [paths.s(isub).readbase allsubj{isub} fileExt_preprocess fileExt_CDT '_ST.mat'];
     end
     disp(['loading: ' filenames])
     clear DAT
@@ -96,8 +103,7 @@ for isub = single_participants
     allMisses       = [allMisses        ; DAT.misses];
     allValidrlock   = [allValidrlock    ; DAT.validrlock];
     allSubject      = [allSubject       ; ones(length(DAT.subject),1)*tmpsub];
-    ID              = [ID ; repmat(allsubj(isub), length(DAT.subject),1)];
-    
+    allID           = [allID            ; repmat(allsubj(isub), length(DAT.subject),1)];
     
     % valid tr ind
     allvalidtr                  = [allvalidtr               ; DAT.validtr.validRT];
@@ -119,16 +125,21 @@ for isub = single_participants
     %     allERPr_csd         = cat(3, allERPr_csd,   ERPr_csd);
     
     %N2
-    allN2c          = [allN2c DAT.N2c];
-    allN2i          = [allN2i DAT.N2i];
-    allN2c_topo     = [allN2c_topo    DAT.N2c_topo];
-    %     allN2i_topo     = [allN2i_topo    DAT.N2i_topo];
-    
+    switch dataset
+        case 'bigDots'
+            allN2c          = [allN2c DAT.N2c_35Hz];
+            allN2cr         = [allN2cr DAT.N2cr_35Hz];
+            allN2i          = [allN2i DAT.N2i_35Hz];
+            allN2c_topo     = [allN2c_topo  DAT.N2c_topo];
+            %     allN2i_topo     = [allN2i_topo    DAT.N2i_topo];
+    end
     %CPP
-    allCPP          = [allCPP       DAT.CPP];
-    allCPPr         = [allCPPr      DAT.CPPr];
-    allCPP_csd      = [allCPP_csd   DAT.CPP_csd];
-    allCPPr_csd     = [allCPPr_csd  DAT.CPPr_csd];
+    allCPP          = [allCPP       DAT.CPP_35Hz];
+    allCPPr         = [allCPPr      DAT.CPPr_35Hz];
+    allCPP_csd      = [allCPP_csd   DAT.CPP_csd_35Hz];
+    allCPPr_csd     = [allCPPr_csd  DAT.CPPr_csd_35Hz];
+    allCPPr_8Hz     = [allCPPr_8Hz   DAT.CPPr_8Hz];
+    allCPPr_csd_8Hz = [allCPPr_csd_8Hz  DAT.CPPr_csd_8Hz];
     allCPP_topo     = [allCPP_topo  DAT.CPP_topo];
     
     %alpha
@@ -157,47 +168,45 @@ for isub = single_participants
     allN2i_256_phase    = cat(3,allN2i_256_phase, DAT.SPG.N2i_256_phase);
     allCPP_power        = cat(3,allCPP_power, DAT.SPG.CPP_power);
     allCPP_phase        = cat(3,allCPP_phase, DAT.SPG.CPP_phase);
-    
-    stft_times      = DAT.spectral_t;
-    stft_timesr     = DAT.spectral_tr;
-    
-    SPG_times       = DAT.SPG.tt;
-    SPG_times256    = DAT.SPG.tt_256;
-    SPG_freq        = DAT.SPG.ff;
-    SPG_freq256     = DAT.SPG.ff_256;
-    
+    allCPPr_power       = cat(3,allCPPr_power, DAT.SPG.CPPr_power);
+    allCPPr_phase       = cat(3,allCPPr_phase, DAT.SPG.CPPr_phase);
+    allCPP_csd_power    = cat(3,allCPP_csd_power, DAT.SPG.CPP_csd_power);
+    allCPP_csd_phase    = cat(3,allCPP_csd_phase, DAT.SPG.CPP_csd_phase);
+    allCPPr_csd_power   = cat(3,allCPPr_csd_power, DAT.SPG.CPPr_csd_power);
+    allCPPr_csd_phase   = cat(3,allCPPr_csd_phase, DAT.SPG.CPPr_csd_phase);
+
     %pupil
     allPupil_bp                = [allPupil_bp  DAT.pupil.bp];
     allPupilr_bp               = [allPupilr_bp DAT.pupilr.bp];
     allPupil_lp                = [allPupil_lp  DAT.pupil.lp];
     allPupilr_lp               = [allPupilr_lp DAT.pupilr.lp];
+    allPupil_lp_1Hz            = [allPupil_lp_1Hz  DAT.pupil.lp_1Hz];
     
     allPupil_lp_baseline       = [allPupil_lp_baseline ; DAT.pupil.baseline.lp];
+    allPupil_lp_1Hz_baseline   = [allPupil_lp_1Hz_baseline ; DAT.pupil.baseline.lp_1Hz];
     allPupil_bp_baseline       = [allPupil_bp_baseline ; DAT.pupil.baseline.bp];
 
-    allPupil_lp_baseline_zscore       = [allPupil_lp_baseline_zscore ; DAT.pupil.baseline_zscore.lp];
-
-    allPupil_bp_RT_neg200_200   = [allPupil_bp_RT_neg200_200 ; DAT.pupil.RT.bp.neg200_200];
-    allPupil_lp_RT_neg200_200   = [allPupil_lp_RT_neg200_200 ; DAT.pupil.RT.lp.neg200_200];
+    allPupil_bp_baselinePhase  = [allPupil_bp_baselinePhase ; DAT.pupil.baselinephase.bp];
     
-    allPupil_lp_linproj_resp_locked_neg500_200      = [allPupil_lp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.lp.resp_locked_neg500_200];
-    allPupil_bp_linproj_resp_locked_neg500_200      = [allPupil_bp_linproj_resp_locked_neg500_200     ; DAT.lpPupil.bp.resp_locked_neg500_200];
+    allPupil_bp_RT_neg200_200 = [allPupil_bp_RT_neg200_200 ; DAT.pupil.RT.bp.neg200_200];
+    allPupil_lp_RT_neg200_200 = [allPupil_lp_RT_neg200_200 ; DAT.pupil.RT.lp.neg200_200];
     
     if isub == single_participants(1)
-        trialadd = 0;
-    else
-        trialadd = max(allTrial_window(:));
+        allStft_times      = DAT.spectral_t;
+        allStft_timesr     = DAT.spectral_tr;
+        
+        allSPG_times       = DAT.SPG.tt;
+        allSPG_timesr      = DAT.SPG.ttr;
+        allSPG_times256    = DAT.SPG.tt_256;
+        allSPG_freq        = DAT.SPG.ff;
+        allSPG_freq256     = DAT.SPG.ff_256;
     end
-    allTrial_window                         = [allTrial_window                      (DAT.trialWindow_idx' + trialadd)];
-    allTrial_window_valid_RT                = [allTrial_window_valid_RT             DAT.trialWindow_valid_RT'];
-    allTrial_window_valid_neg100_RT_200     = [allTrial_window_valid_neg100_RT_200  DAT.trialWindow_valid_neg100_RT_200'];
-    allTrial_window_valid_neg500_0          = [allTrial_window_valid_neg500_0       DAT.trialWindow_valid_neg500_0'];
-
+    
     clear DAT
 end
 
 %% save
-filename_mat = [paths.pop 'allSub_singleTrial' fileExt analyse_CDT_fileExt '.mat'];
+filename_mat = [paths.pop 'allSub_singleTrial' fileExt_preprocess fileExt_CDT '.mat'];
 disp(['saving ' filename_mat])
-save([filename_mat],'-v7.3')
+save([filename_mat],'all*','-v7.3')
 
